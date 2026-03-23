@@ -1,0 +1,16 @@
+# --- FRONTEND (React/Vite) ---
+node_modules/
+dist/
+dist-ssr/
+*.local
+.vscode/
+
+# --- BACKEND (Python/IA) ---
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+.ipynb_checkpoints/
+*.db

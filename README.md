@@ -235,7 +235,7 @@ O back-end utiliza um **Ambiente Virtual (venv)**.
 
 4. Instale as bibliotecas (se for a primeira vez):
    ```bash
-   pip install fastapi uvicorn
+   pip install -r requirements.txt
    ```
 
 5. Rode o servidor:

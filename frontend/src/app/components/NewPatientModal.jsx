@@ -14,14 +14,41 @@ import { PetFields, ObservationFields, OwnerFields } from './PatientFormFields';
 
 export function NewPatientModal({ isOpen, onClose, onSubmit, existingOwner }) {
   const [formData, setFormData] = useState({
+    // Dados do Pet (tabela pets)
     petName: '',
     species: '',
     breed: '',
+    petVivo: true,
+    petPeso: '',
     birthDate: '',
+    petSexo: '',
+    petCastrado: '',
+    petPorte: '',
+    petCor: '',
+    petPelagem: '',
+    petPedigree: '',
+    petChip: '',
+    petMatriculaConvenio: '',
+    petFotoUrl: '',
+    // Dados do Tutor (tabela clientes)
     ownerName: existingOwner?.ownerName || '',
-    ownerPhone: existingOwner?.ownerPhone || '',
+    ownerSexo: existingOwner?.ownerSexo || '',
+    ownerNacionalidade: existingOwner?.ownerNacionalidade || '',
+    ownerEstadoCivil: existingOwner?.ownerEstadoCivil || '',
     ownerCPF: existingOwner?.ownerCPF || '',
+    ownerRG: existingOwner?.ownerRG || '',
+    ownerDataNascimento: existingOwner?.ownerDataNascimento || '',
+    ownerProfissao: existingOwner?.ownerProfissao || '',
+    ownerComoConheceu: existingOwner?.ownerComoConheceu || '',
+    ownerMatriculaConvenio: existingOwner?.ownerMatriculaConvenio || '',
     ownerEmail: existingOwner?.ownerEmail || '',
+    ownerPhone: existingOwner?.ownerPhone || '',
+    ownerFacebook: existingOwner?.ownerFacebook || '',
+    ownerInstagram: existingOwner?.ownerInstagram || '',
+    ownerMarcacaoNeutra: existingOwner?.ownerMarcacaoNeutra || '',
+    ownerMarcacaoPositiva: existingOwner?.ownerMarcacaoPositiva || '',
+    ownerFotoUrl: existingOwner?.ownerFotoUrl || '',
+    // Observações
     allergies: '',
     importantNotes: ''
   });
@@ -38,7 +65,7 @@ export function NewPatientModal({ isOpen, onClose, onSubmit, existingOwner }) {
       <DialogContent className="sm:max-w-4xl max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
-            <Plus className="w-6 h-6 text-[#FFB144]" />
+            <Plus className="w-6 h-6 text-[#EF6C50]" />
             Cadastrar Novo Paciente
           </DialogTitle>
           <DialogDescription className="text-base">
@@ -51,9 +78,9 @@ export function NewPatientModal({ isOpen, onClose, onSubmit, existingOwner }) {
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
           {/* Alerta quando for tutor existente */}
           {existingOwner && (
-            <Alert className="bg-[#CFEAF3] border-[#032048] border mb-4">
-              <Info className="h-4 w-4 text-[#032048]" />
-              <AlertDescription className="text-sm text-[#032048]">
+            <Alert className="bg-[#7DD87D]/12 border-[#7DD87D] border mb-4">
+              <Info className="h-4 w-4 text-[#7DD87D]" />
+              <AlertDescription className="text-sm text-[#1A2332]">
                 <strong>Cadastrando novo pet para o tutor:</strong> {existingOwner.ownerName}
               </AlertDescription>
             </Alert>
@@ -106,7 +133,7 @@ export function NewPatientModal({ isOpen, onClose, onSubmit, existingOwner }) {
             </Button>
             <Button
               type="submit"
-              className="h-10 px-5 text-sm bg-[#FFB144] hover:bg-[#E59530]"
+              className="h-10 px-5 text-sm bg-[#EF6C50] hover:bg-[#E05C40]"
             >
               <Plus className="w-4 h-4 mr-2" />
               Cadastrar Paciente

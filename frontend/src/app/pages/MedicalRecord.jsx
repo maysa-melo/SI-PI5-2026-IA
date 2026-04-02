@@ -75,7 +75,7 @@ export function MedicalRecord() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC]">
+    <div className="min-h-screen bg-[#FAFBFC]">
       {/* Header */}
       <header className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto">
@@ -91,14 +91,14 @@ export function MedicalRecord() {
                 <h1 className="text-lg sm:text-xl font-semibold text-gray-900">
                   Prontuário Gerado por IA
                 </h1>
-                <Sparkles className="w-5 h-5 text-[#2C5EAD]" />
+                <Sparkles className="w-5 h-5 text-[#F5A623]" />
               </div>
               <p className="text-xs sm:text-sm text-gray-500">Revise e editeções antes de salvar</p>
             </div>
           </div>
 
           {/* Patient Info */}
-          <div className="bg-gradient-to-r from-[#2C5EAD] to-[#4A90E2] rounded-lg p-4 text-white">
+          <div className="bg-gradient-to-r from-[#1c5ca6] to-[#38A169] rounded-lg p-4 text-white">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
                 <h2 className="text-xl font-bold">{patient.name}</h2>
@@ -139,7 +139,7 @@ export function MedicalRecord() {
                     <Button
                       onClick={() => handleSaveEdit(index)}
                       size="sm"
-                      className="gap-2 bg-[#4ECDC4] hover:bg-[#3db8af] text-white"
+                      className="gap-2 bg-[#38A169] hover:bg-[#2D8B55] text-white"
                     >
                       <Check className="w-4 h-4" />
                       Salvar
@@ -193,7 +193,7 @@ export function MedicalRecord() {
 
           <Button
             onClick={handleSave}
-            className="flex-1 h-12 sm:h-14 bg-[#4ECDC4] hover:bg-[#3db8af] text-white text-base font-semibold"
+            className="flex-1 h-12 sm:h-14 bg-[#EF6C50] hover:bg-[#E05C40] text-white text-base font-semibold"
           >
             <Save className="w-5 h-5 mr-2" />
             Salvar no Histórico

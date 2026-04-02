@@ -177,7 +177,7 @@ CRMV: __________`;
       <DialogContent className="sm:max-w-4xl max-h-[98vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
-            <FileText className="w-6 h-6 text-[#2C5EAD]" />
+            <FileText className="w-6 h-6 text-[#EF6C50]" />
             Editar Prontuário
           </DialogTitle>
           <DialogDescription className="text-base">
@@ -190,7 +190,7 @@ CRMV: __________`;
           <Textarea
             value={recordContent}
             onChange={(e) => setRecordContent(e.target.value)}
-            className="min-h-[450px] font-mono text-sm leading-relaxed resize-none border-2 border-gray-200 focus-visible:border-[#2C5EAD] focus-visible:ring-0"
+            className="min-h-[450px] font-mono text-sm leading-relaxed resize-none border-2 border-gray-200 focus-visible:border-[#EF6C50] focus-visible:ring-0"
             placeholder="Conteúdo do prontuário..."
           />
         </div>

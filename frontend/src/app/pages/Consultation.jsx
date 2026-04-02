@@ -55,7 +55,7 @@ export function Consultation() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col">
+    <div className="min-h-screen bg-[#FAFBFC] flex flex-col">
       {/* Header */}
       <header className="bg-white border-b border-gray-100 px-4 sm:px-6 py-4">
         <div className="flex items-center gap-3">
@@ -78,7 +78,7 @@ export function Consultation() {
           {/* Patient Profile - Minimal */}
           <div className="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
             <div className="flex items-center gap-4">
-              <div className="relative flex items-center justify-center w-12 h-12 rounded-full bg-[#2C5EAD]/10 text-[#2C5EAD]">
+              <div className="relative flex items-center justify-center w-12 h-12 rounded-full bg-[#7DD87D]/15 text-[#38A169]">
                 <span className="text-lg font-semibold">{patient.petName.charAt(0)}</span>
                 <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-white" />
               </div>
@@ -137,7 +137,7 @@ export function Consultation() {
 
             <Button
               onClick={handleFinalize}
-              className="h-12 bg-[#2C5EAD] hover:bg-[#234a8f] text-white text-sm font-medium rounded-lg"
+              className="h-12 bg-[#EF6C50] hover:bg-[#E05C40] text-white text-sm font-medium rounded-lg"
             >
               <Square className="w-4 h-4 mr-2" />
               Finalizar

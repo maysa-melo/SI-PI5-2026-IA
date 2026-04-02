@@ -80,7 +80,7 @@ export function LoginForm() {
             <Logo variant="login" />
             <div>
               <h1 className="text-2xl font-semibold text-gray-900">
-                VetScribe
+                AnimalTalk
               </h1>
               <p className="text-sm text-gray-500">
                 Gestão Veterinária
@@ -140,7 +140,7 @@ export function LoginForm() {
               </Label>
               <button
                 type="button"
-                className="text-xs text-[#032048] hover:text-[#FFB144] transition-colors"
+                className="text-xs text-[#EF6C50] hover:text-[#E05C40] transition-colors"
               >
                 Esqueceu a senha?
               </button>
@@ -175,7 +175,7 @@ export function LoginForm() {
           <Button
             type="submit"
             disabled={isLoading}
-            className="w-full h-11 bg-[#FFB144] hover:bg-[#E59530] text-white font-medium transition-colors"
+            className="w-full h-11 bg-[#EF6C50] hover:bg-[#E05C40] text-white font-medium transition-colors"
           >
             {isLoading ? (
               <span className="flex items-center gap-2">
@@ -191,7 +191,7 @@ export function LoginForm() {
         {/* Security Notice */}
         <div className="mt-6 pt-6 border-t border-gray-100">
           <div className="flex items-start gap-2 text-xs text-gray-500">
-            <ShieldCheck className="w-4 h-4 mt-0.5 text-[#032048] flex-shrink-0" />
+            <ShieldCheck className="w-4 h-4 mt-0.5 text-[#7DD87D] flex-shrink-0" />
             <p>
               Sua conexão é protegida com criptografia de padrão industrial. 
               A autenticação utiliza tokens JWT para gerenciamento seguro de sessão.
@@ -202,7 +202,7 @@ export function LoginForm() {
 
       {/* Footer */}
       <p className="text-center text-xs text-gray-500 mt-6">
-        © 2026 VetScribe. Todos os direitos reservados.
+        © 2026 AnimalTalk. Todos os direitos reservados.
       </p>
     </div>
   );

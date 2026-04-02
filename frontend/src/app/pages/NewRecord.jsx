@@ -29,7 +29,7 @@ export function NewRecord() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC]">
+    <div className="min-h-screen bg-[#FAFBFC]">
       {/* Header */}
       <header className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto">
@@ -42,7 +42,7 @@ export function NewRecord() {
             </button>
             <div className="flex-1">
               <h1 className="text-lg sm:text-xl font-semibold text-gray-900 flex items-center gap-2">
-                <FileText className="w-6 h-6 text-[#2C5EAD]" />
+                <FileText className="w-6 h-6 text-[#EF6C50]" />
                 Novo Prontuário
               </h1>
               <p className="text-xs sm:text-sm text-gray-500">Selecione o paciente para iniciar o atendimento</p>
@@ -63,14 +63,14 @@ export function NewRecord() {
                 placeholder="Buscar por nome do pet, tutor ou CPF..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-14 h-14 text-base border-2 border-gray-200 focus-visible:border-[#2C5EAD] focus-visible:ring-[#2C5EAD]"
+                className="pl-14 h-14 text-base border-2 border-gray-200 focus-visible:border-[#EF6C50] focus-visible:ring-[#EF6C50]"
               />
             </div>
           </div>
 
           {/* Selected Patient */}
           {selectedPatient && (
-            <div className="bg-gradient-to-r from-[#2C5EAD] to-[#4A90E2] rounded-xl p-6 text-white shadow-lg animate-in fade-in slide-in-from-top-2 duration-300">
+            <div className="bg-gradient-to-r from-[#1c5ca6] to-[#38A169] rounded-xl p-6 text-white shadow-lg animate-in fade-in slide-in-from-top-2 duration-300">
               <div className="mb-3">
                 <h3 className="text-2xl font-bold">{selectedPatient.petName}</h3>
                 <p className="text-sm opacity-90 mt-1">
@@ -127,7 +127,7 @@ export function NewRecord() {
                     onClick={() => handleSelectPatient(patient)}
                     className={`w-full px-6 py-4 hover:bg-gray-50 transition-all text-left ${
                       selectedPatient?.id === patient.id
-                        ? 'bg-blue-50 border-l-4 border-[#2C5EAD]'
+                        ? 'bg-orange-50 border-l-4 border-[#EF6C50]'
                         : ''
                     }`}
                   >
@@ -154,7 +154,7 @@ export function NewRecord() {
                       </div>
                       
                       {selectedPatient?.id === patient.id && (
-                        <div className="flex items-center justify-center w-6 h-6 rounded-full bg-[#2C5EAD] text-white flex-shrink-0">
+                        <div className="flex items-center justify-center w-6 h-6 rounded-full bg-[#EF6C50] text-white flex-shrink-0">
                           <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                             <path
                               fillRule="evenodd"
@@ -179,7 +179,7 @@ export function NewRecord() {
           <div className="max-w-4xl mx-auto">
             <Button
               onClick={handleStartRecording}
-              className="w-full h-14 bg-[#4ECDC4] hover:bg-[#3db8af] text-white text-base font-semibold"
+              className="w-full h-14 bg-[#EF6C50] hover:bg-[#E05C40] text-white text-base font-semibold"
             >
               <FileText className="w-5 h-5 mr-2" />
               Iniciar Gravação do Atendimento

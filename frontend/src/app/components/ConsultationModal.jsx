@@ -62,7 +62,7 @@ export function ConsultationModal({ isOpen, onClose, patient, onFinalize }) {
           {/* Patient Profile - Minimal */}
           <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
             <div className="flex items-center gap-3">
-              <div className="relative flex items-center justify-center w-10 h-10 rounded-full bg-[#CFEAF3] text-[#032048]">
+              <div className="relative flex items-center justify-center w-10 h-10 rounded-full bg-[#7DD87D]/15 text-[#38A169]">
                 <span className="text-base font-semibold">{patient.petName.charAt(0)}</span>
                 <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
               </div>
@@ -121,7 +121,7 @@ export function ConsultationModal({ isOpen, onClose, patient, onFinalize }) {
 
             <Button
               onClick={handleFinalize}
-              className="h-11 bg-[#FFB144] hover:bg-[#E59530] text-white text-sm font-medium rounded-lg"
+              className="h-11 bg-[#EF6C50] hover:bg-[#E05C40] text-white text-sm font-medium rounded-lg"
             >
               <Square className="w-4 h-4 mr-2" />
               Finalizar

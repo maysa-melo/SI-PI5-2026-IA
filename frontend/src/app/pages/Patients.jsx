@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { Search, FileText } from 'lucide-react';
+import { useNavigate } from 'react-router';
+import { Search, FileText, Plus } from 'lucide-react';
 import { Input } from '../components/ui/input';
-import { PatientDetailModal } from '../components/PatientDetailModal';
 import { NewPatientModal } from '../components/NewPatientModal';
 
 // Mock data
@@ -105,20 +105,14 @@ const initialPatients = [
 ];
 
 export function Patients() {
+  const navigate = useNavigate();
   const [patients, setPatients] = useState(initialPatients);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedPatient, setSelectedPatient] = useState(null);
   const [isAddingPatient, setIsAddingPatient] = useState(false);
   const [existingOwner, setExistingOwner] = useState(null);
 
-  const handleAddPetForOwner = (ownerData) => {
-    setExistingOwner(ownerData);
-    setIsAddingPatient(true);
-  };
-
-  const handleDeleteOwner = (ownerCPF) => {
-    setPatients((prev) => prev.filter((p) => p.ownerCPF !== ownerCPF));
-    setSelectedPatient(null);
+  const handlePatientClick = (patient) => {
+    navigate(`/dashboard/pacientes/${patient.id}`);
   };
 
   const handleCloseNewPatientModal = () => {
@@ -173,7 +167,7 @@ export function Patients() {
             placeholder="Buscar por nome do pet, tutor ou raça..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-12 h-12 text-base border-2 border-gray-200 focus-visible:border-[#2C5EAD] focus-visible:ring-0"
+            className="pl-12 h-12 text-base border-2 border-gray-200 focus-visible:border-[#EF6C50] focus-visible:ring-0"
           />
         </div>
       </div>
@@ -182,9 +176,10 @@ export function Patients() {
       <div className="mb-6">
         <button
           onClick={() => setIsAddingPatient(true)}
-          className="bg-[#2C5EAD] text-white px-4 py-2 rounded-lg font-semibold"
+          className="h-14 bg-white border-2 border-[#38A169] text-[#38A169] hover:bg-[#38A169] hover:text-white text-sm font-medium whitespace-nowrap px-6 transition-colors rounded-md inline-flex items-center justify-center"
         >
-          Adicionar Paciente
+          <Plus className="w-4 h-4 mr-2" />
+          Novo Paciente
         </button>
       </div>
 
@@ -193,8 +188,8 @@ export function Patients() {
         {filteredPatients.map((patient) => (
           <div
             key={patient.id}
-            onClick={() => setSelectedPatient(patient)}
-            className="bg-white border-2 border-gray-200 rounded-lg p-5 hover:border-[#2C5EAD] hover:shadow-md transition-all cursor-pointer"
+            onClick={() => handlePatientClick(patient)}
+            className="bg-white border-2 border-gray-200 rounded-lg p-5 hover:border-[#EF6C50] hover:shadow-md transition-all cursor-pointer"
           >
             <div className="flex items-start gap-4">
               {/* Avatar */}
@@ -232,16 +227,6 @@ export function Patients() {
           <p className="text-gray-500">Nenhum paciente encontrado</p>
         </div>
       )}
-
-      {/* Patient Detail Modal */}
-      <PatientDetailModal
-        key={selectedPatient?.id}
-        isOpen={!!selectedPatient}
-        onClose={() => setSelectedPatient(null)}
-        patient={selectedPatient}
-        onAddPetForOwner={handleAddPetForOwner}
-        onDeleteOwner={handleDeleteOwner}
-      />
 
       {/* New Patient Modal */}
       <NewPatientModal

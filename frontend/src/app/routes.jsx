@@ -3,6 +3,7 @@ import { LoginPage } from "./pages/LoginPage";
 import { DashboardLayout } from "./components/DashboardLayout";
 import { Dashboard } from "./pages/Dashboard";
 import { Patients } from "./pages/Patients";
+import { PatientProfile } from "./pages/PatientProfile";
 import { Consultation } from "./pages/Consultation";
 import { MedicalRecord } from "./pages/MedicalRecord";
 import { PatientHistory } from "./pages/PatientHistory";
@@ -19,6 +20,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, Component: Dashboard },
       { path: "pacientes", Component: Patients },
+      { path: "pacientes/:id", Component: PatientProfile },
     ]
   },
   {

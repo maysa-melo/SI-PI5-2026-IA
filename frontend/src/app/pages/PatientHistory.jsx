@@ -105,7 +105,7 @@ export function PatientHistory() {
   });
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC]">
+    <div className="min-h-screen bg-[#FAFBFC]">
       {/* Header */}
       <header className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4">
         <div className="max-w-5xl mx-auto">
@@ -129,9 +129,9 @@ export function PatientHistory() {
         <div className="max-w-5xl mx-auto space-y-6">
           {/* Patient Summary Card */}
           <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-            <div className="bg-gradient-to-r from-[#2C5EAD] to-[#4A90E2] px-6 py-8">
+            <div className="bg-gradient-to-r from-[#1c5ca6] to-[#38A169] px-6 py-8">
               <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
-                <div className="relative flex items-center justify-center w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-white text-[#2C5EAD] border-4 border-white shadow-lg">
+                <div className="relative flex items-center justify-center w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-white text-[#1c5ca6] border-4 border-white shadow-lg">
                   <span className="text-4xl sm:text-6xl font-bold">{patient.name.charAt(0)}</span>
                 </div>
                 <div className="flex-1 text-center sm:text-left text-white">
@@ -171,11 +171,11 @@ export function PatientHistory() {
               {/* Stats */}
               <div className="grid grid-cols-3 gap-4 pt-2">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-[#2C5EAD]">{consultations.length}</div>
+                  <div className="text-2xl font-bold text-[#EF6C50]">{consultations.length}</div>
                   <div className="text-xs text-gray-500 mt-1">Consultas</div>
                 </div>
                 <div className="text-center border-x border-gray-200">
-                  <div className="text-2xl font-bold text-[#2C5EAD]">5</div>
+                  <div className="text-2xl font-bold text-[#EF6C50]">5</div>
                   <div className="text-xs text-gray-500 mt-1">Anos</div>
                 </div>
                 <div className="text-center">
@@ -190,7 +190,7 @@ export function PatientHistory() {
           <div className="bg-white rounded-xl shadow border border-gray-100">
             <div className="px-6 py-4 border-b border-gray-100">
               <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-[#2C5EAD]" />
+                <Calendar className="w-5 h-5 text-[#EF6C50]" />
                 Histórico de Atendimentos
               </h2>
               <p className="text-sm text-gray-500 mt-1">Cronologia completa de consultas e procedimentos</p>
@@ -212,13 +212,13 @@ export function PatientHistory() {
                     {monthConsultations.map((consultation) => (
                       <div
                         key={consultation.id}
-                        className="bg-gray-50 rounded-lg p-4 sm:p-5 border border-gray-200 hover:border-[#2C5EAD] hover:shadow-md transition-all"
+                        className="bg-gray-50 rounded-lg p-4 sm:p-5 border border-gray-200 hover:border-[#EF6C50] hover:shadow-md transition-all"
                       >
                         {/* Consultation Header */}
                         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-3">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
-                              <span className="px-3 py-1 bg-[#2C5EAD] text-white rounded-full text-xs font-semibold">
+                              <span className="px-3 py-1 bg-[#EF6C50] text-white rounded-full text-xs font-semibold">
                                 {consultation.type}
                               </span>
                               <span className="text-xs text-gray-500">

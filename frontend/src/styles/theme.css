@@ -3,49 +3,52 @@
 :root {
   --font-size: 16px;
   
-  /* VetScribe Color Palette */
-  --vet-navy: #032048;
-  --vet-blue-light: #CFEAF3;
-  --vet-cream: #FCF3E4;
-  --vet-orange: #FFB144;
+  /* AnimalTalk Color Palette */
+  --at-forest: #14352A;
+  --at-green: #38A169;
+  --at-green-light: #7DD87D;
+  --at-coral: #EF6C50;
+  --at-coral-dark: #E05C40;
+  --at-amber: #F5A623;
+  --at-navy: #1c5ca6;
   
-  --background: #ffffff;
-  --foreground: #032048;
+  --background: #FAFBFC;
+  --foreground: #1A2332;
   --card: #ffffff;
-  --card-foreground: #032048;
+  --card-foreground: #1A2332;
   --popover: #ffffff;
-  --popover-foreground: #032048;
-  --primary: #032048;
+  --popover-foreground: #1A2332;
+  --primary: #EF6C50;
   --primary-foreground: #ffffff;
-  --secondary: #CFEAF3;
-  --secondary-foreground: #032048;
-  --muted: #CFEAF3;
-  --muted-foreground: #032048;
-  --accent: #FFB144;
-  --accent-foreground: #ffffff;
+  --secondary: rgba(125, 216, 125, 0.14);
+  --secondary-foreground: #38A169;
+  --muted: rgba(125, 216, 125, 0.07);
+  --muted-foreground: #1A2332;
+  --accent: #7DD87D;
+  --accent-foreground: #1A2332;
   --destructive: #d4183d;
   --destructive-foreground: #ffffff;
-  --border: rgba(3, 32, 72, 0.1);
+  --border: rgba(26, 35, 50, 0.10);
   --input: transparent;
   --input-background: #ffffff;
-  --switch-background: #CFEAF3;
+  --switch-background: rgba(239, 108, 80, 0.38);
   --font-weight-medium: 500;
   --font-weight-normal: 400;
-  --ring: #032048;
-  --chart-1: #FFB144;
-  --chart-2: #CFEAF3;
-  --chart-3: #032048;
-  --chart-4: #FCF3E4;
-  --chart-5: #769fcd;
+  --ring: #EF6C50;
+  --chart-1: #38A169;
+  --chart-2: #EF6C50;
+  --chart-3: #7DD87D;
+  --chart-4: #F5A623;
+  --chart-5: #1c5ca6;
   --radius: 0.625rem;
-  --sidebar: #032048;
+  --sidebar: #1c5ca6;
   --sidebar-foreground: #ffffff;
-  --sidebar-primary: #FFB144;
+  --sidebar-primary: #EF6C50;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: rgba(255, 177, 68, 0.1);
+  --sidebar-accent: rgba(239, 108, 80, 0.18);
   --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: rgba(255, 255, 255, 0.1);
-  --sidebar-ring: #FFB144;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-ring: #EF6C50;
 }
 
 .dark {

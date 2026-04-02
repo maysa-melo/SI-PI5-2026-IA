@@ -1,10 +1,10 @@
-import { Outlet, Link, useLocation } from 'react-router';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router';
 import { Users, LogOut, Home, Menu } from 'lucide-react';
 import { Logo } from './Logo';
 import { useState } from 'react';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from './ui/sheet';
 
-function SidebarContent({ isActive, closeMobileMenu }) {
+function SidebarContent({ isActive, closeMobileMenu, onLogout }) {
   return (
     <>
       {/* Logo and Title */}
@@ -14,7 +14,7 @@ function SidebarContent({ isActive, closeMobileMenu }) {
             <Logo />
           </div>
           <div>
-            <h1 className="text-lg font-semibold text-white">VetScribe</h1>
+            <h1 className="text-lg font-semibold text-white">AnimalTalk</h1>
             <p className="text-xs text-gray-300">Sistema Veterinário</p>
           </div>
         </div>
@@ -28,7 +28,7 @@ function SidebarContent({ isActive, closeMobileMenu }) {
             onClick={closeMobileMenu}
             className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
               isActive('/dashboard')
-                ? 'bg-[#CFEAF3] text-[#032048]'
+                ? 'bg-[#7DD87D]/20 text-white'
                 : 'text-white hover:bg-white/10'
             }`}
           >
@@ -41,7 +41,7 @@ function SidebarContent({ isActive, closeMobileMenu }) {
             onClick={closeMobileMenu}
             className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
               isActive('/dashboard/pacientes')
-                ? 'bg-[#CFEAF3] text-[#032048]'
+                ? 'bg-[#7DD87D]/20 text-white'
                 : 'text-white hover:bg-white/10'
             }`}
           >
@@ -53,7 +53,7 @@ function SidebarContent({ isActive, closeMobileMenu }) {
 
       {/* User/Logout */}
       <div className="p-4 border-t border-sidebar-border">
-        <button className="flex items-center gap-3 px-4 py-3 rounded-lg text-white hover:bg-white/10 transition-colors w-full">
+        <button onClick={onLogout} className="flex items-center gap-3 px-4 py-3 rounded-lg text-white hover:bg-white/10 transition-colors w-full">
           <LogOut className="w-5 h-5" />
           <span className="font-medium">Sair</span>
         </button>
@@ -64,7 +64,12 @@ function SidebarContent({ isActive, closeMobileMenu }) {
 
 export function DashboardLayout() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const handleLogout = () => {
+    navigate('/');
+  };
 
   const isActive = (path) => {
     if (path === '/dashboard') {
@@ -81,13 +86,13 @@ export function DashboardLayout() {
     <div className="flex h-screen bg-background">
       {/* Desktop Sidebar - hidden on mobile */}
       <aside className="hidden lg:flex w-64 bg-sidebar flex-col">
-        <SidebarContent isActive={isActive} closeMobileMenu={closeMobileMenu} />
+        <SidebarContent isActive={isActive} closeMobileMenu={closeMobileMenu} onLogout={handleLogout} />
       </aside>
 
       {/* Mobile Menu Button */}
       <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
         <SheetTrigger asChild>
-          <button className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-[#032048] text-white rounded-lg shadow-lg hover:bg-[#032048]/90 transition-colors">
+          <button className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-[#1c5ca6] text-white rounded-lg shadow-lg hover:bg-[#1c5ca6]/90 transition-colors">
             <Menu className="w-6 h-6" />
           </button>
         </SheetTrigger>
@@ -95,11 +100,11 @@ export function DashboardLayout() {
           {/* Hidden accessibility elements */}
           <SheetTitle className="sr-only">Menu de Navegação</SheetTitle>
           <SheetDescription className="sr-only">
-            Navegue entre as páginas do VetScribe
+            Navegue entre as páginas do AnimalTalk
           </SheetDescription>
           
           <div className="flex flex-col h-full">
-            <SidebarContent isActive={isActive} closeMobileMenu={closeMobileMenu} />
+            <SidebarContent isActive={isActive} closeMobileMenu={closeMobileMenu} onLogout={handleLogout} />
           </div>
         </SheetContent>
       </Sheet>

@@ -29,7 +29,7 @@ export function AudioWaveform({ isActive }) {
       {bars.map((height, i) => (
         <div
           key={i}
-          className="flex-1 bg-[#FFB144]/20 rounded-full transition-all duration-75 ease-linear"
+          className="flex-1 bg-[#7DD87D]/30 rounded-full transition-all duration-75 ease-linear"
           style={{ 
             height: `${height}%`,
             maxWidth: '8px'

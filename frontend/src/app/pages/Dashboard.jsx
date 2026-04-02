@@ -89,11 +89,14 @@ export function Dashboard() {
   };
 
   const handlePatientClick = (patient) => {
-    navigate(`/paciente/${patient.id}`);
+    navigate(`/dashboard/pacientes/${patient.id}`);
   };
 
   const handleSelectPatient = (patient) => {
     setSelectedPatient(patient);
+  };
+
+  const handleStartConsultation = () => {
     setCountdown(3);
 
     let count = 3;
@@ -141,7 +144,7 @@ export function Dashboard() {
     <div className="flex flex-col min-h-screen bg-white">
       {/* Header */}
       <header className="bg-white border-b border-gray-200 px-4 sm:px-8 py-6 lg:pl-8 pl-20">
-        <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">Bem-vindo ao VetScribe</h1>
+        <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">Bem-vindo ao AnimalTalk</h1>
         <p className="text-sm text-gray-500 mt-1">Gerencie seus atendimentos de forma rápida e eficiente</p>
       </header>
 
@@ -151,40 +154,40 @@ export function Dashboard() {
           {/* Statistics Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Total Prontuários */}
-            <div className="bg-gradient-to-br from-[#FCF3E4] to-[#F5E8CF] rounded-xl shadow-md border border-[#FCF3E4] p-6 hover:shadow-lg transition-shadow">
+            <div className="bg-gradient-to-br from-[#7DD87D]/10 to-[#7DD87D]/20 rounded-xl shadow-md border border-[#7DD87D]/25 p-6 hover:shadow-lg transition-shadow">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-[#032048]/70 font-medium">Total de Prontuários</p>
-                  <p className="text-3xl font-bold text-[#032048] mt-2">18</p>
+                  <p className="text-sm text-[#1A2332]/70 font-medium">Total de Prontuários</p>
+                  <p className="text-3xl font-bold text-[#1A2332] mt-2">18</p>
                 </div>
-                <div className="w-14 h-14 rounded-full bg-white/50 flex items-center justify-center">
-                  <ClipboardList className="w-7 h-7 text-[#032048]" />
+                <div className="w-14 h-14 rounded-full bg-[#38A169]/12 flex items-center justify-center">
+                  <ClipboardList className="w-7 h-7 text-[#38A169]" />
                 </div>
               </div>
             </div>
 
             {/* Total Pacientes */}
-            <div className="bg-gradient-to-br from-[#FFB144] to-[#FFA024] rounded-xl shadow-md border border-[#FFB144] p-6 hover:shadow-lg transition-shadow">
+            <div className="bg-gradient-to-br from-[#EF6C50]/8 to-[#EF6C50]/16 rounded-xl shadow-md border border-[#EF6C50]/15 p-6 hover:shadow-lg transition-shadow">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-white/90 font-medium">Pacientes Cadastrados</p>
-                  <p className="text-3xl font-bold text-white mt-2">6</p>
+                  <p className="text-sm text-[#1A2332]/70 font-medium">Pacientes Cadastrados</p>
+                  <p className="text-3xl font-bold text-[#1A2332] mt-2">6</p>
                 </div>
-                <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center">
-                  <PawPrint className="w-7 h-7 text-white" />
+                <div className="w-14 h-14 rounded-full bg-[#EF6C50]/12 flex items-center justify-center">
+                  <PawPrint className="w-7 h-7 text-[#EF6C50]" />
                 </div>
               </div>
             </div>
 
             {/* Total Tutores */}
-            <div className="bg-gradient-to-br from-[#CFEAF3] to-[#A8D5E2] rounded-xl shadow-md border border-[#CFEAF3] p-6 hover:shadow-lg transition-shadow">
+            <div className="bg-gradient-to-br from-[#1c5ca6]/6 to-[#1c5ca6]/12 rounded-xl shadow-md border border-[#1c5ca6]/10 p-6 hover:shadow-lg transition-shadow">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-[#032048]/70 font-medium">Tutores Cadastrados</p>
-                  <p className="text-3xl font-bold text-[#032048] mt-2">6</p>
+                  <p className="text-sm text-[#1A2332]/70 font-medium">Tutores Cadastrados</p>
+                  <p className="text-3xl font-bold text-[#1A2332] mt-2">6</p>
                 </div>
-                <div className="w-14 h-14 rounded-full bg-white/50 flex items-center justify-center">
-                  <Users className="w-7 h-7 text-[#032048]" />
+                <div className="w-14 h-14 rounded-full bg-[#1c5ca6]/10 flex items-center justify-center">
+                  <Users className="w-7 h-7 text-[#1c5ca6]" />
                 </div>
               </div>
             </div>
@@ -202,7 +205,7 @@ export function Dashboard() {
                     placeholder="Buscar nos últimos atendimentos (Nome, Tutor ou Raça)"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-14 pr-4 h-14 text-base border-2 border-gray-200 focus-visible:border-[#2C5EAD] focus-visible:ring-0 focus-visible:ring-offset-0"
+                    className="pl-14 pr-4 h-14 text-base border-2 border-gray-200 focus-visible:border-[#EF6C50] focus-visible:ring-0 focus-visible:ring-offset-0"
                   />
                 </div>
               </div>
@@ -212,7 +215,7 @@ export function Dashboard() {
                 <Button
                   onClick={handleEmergency}
                   variant="outline"
-                  className="h-14 bg-white border-2 border-[#032048] text-[#032048] hover:bg-[#032048] hover:text-white text-sm font-medium whitespace-nowrap px-6 transition-colors"
+                  className="h-14 bg-white border-2 border-[#EF6C50] text-[#EF6C50] hover:bg-[#EF6C50] hover:text-white text-sm font-medium whitespace-nowrap px-6 transition-colors"
                 >
                   <FileText className="w-4 h-4 mr-2" />
                   Novo Prontuário
@@ -221,7 +224,7 @@ export function Dashboard() {
                 <Button
                   onClick={handleNewPatient}
                   variant="outline"
-                  className="h-14 bg-white border-2 border-[#FFB144] text-[#FFB144] hover:bg-[#FFB144] hover:text-white text-sm font-medium whitespace-nowrap px-6 transition-colors"
+                  className="h-14 bg-white border-2 border-[#38A169] text-[#38A169] hover:bg-[#38A169] hover:text-white text-sm font-medium whitespace-nowrap px-6 transition-colors"
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Novo Paciente
@@ -234,7 +237,7 @@ export function Dashboard() {
           <div className="bg-white rounded-xl shadow border border-gray-100">
             <div className="px-6 py-4 border-b border-gray-100">
               <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                <Clock className="w-5 h-5 text-[#032048]" />
+                <Clock className="w-5 h-5 text-[#38A169]" />
                 Últimos Atendimentos
               </h2>
               <p className="text-sm text-gray-500 mt-1">Acesso rápido aos pacientes recentes</p>
@@ -276,7 +279,7 @@ export function Dashboard() {
         <DialogContent className="sm:max-w-4xl max-h-[98vh]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-xl">
-              <FileText className="w-6 h-6 text-[#2C5EAD]" />
+              <FileText className="w-6 h-6 text-[#EF6C50]" />
               Novo Prontuário
             </DialogTitle>
             <DialogDescription className="text-base">
@@ -290,7 +293,7 @@ export function Dashboard() {
               <div className="flex items-center justify-center h-[400px]">
                 <div className="text-center">
                   <div className="animate-in zoom-in duration-300">
-                    <span className="text-[120px] font-bold text-[#2C5EAD] leading-none">{countdown}</span>
+                    <span className="text-[120px] font-bold text-[#F5A623] leading-none">{countdown}</span>
                   </div>
                   <p className="mt-6 text-xl font-semibold text-gray-700">
                     Iniciando gravação...
@@ -298,6 +301,40 @@ export function Dashboard() {
                   <p className="mt-2 text-base text-gray-500">
                     Prepare-se para começar o atendimento
                   </p>
+                </div>
+              </div>
+            ) : selectedPatient && countdown === null ? (
+              /* Confirmation Screen */
+              <div className="flex items-center justify-center h-[400px]">
+                <div className="text-center space-y-6">
+                  <div className="w-20 h-20 rounded-full bg-[#EF6C50]/10 flex items-center justify-center mx-auto">
+                    <PawPrint className="w-10 h-10 text-[#EF6C50]" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-gray-900">{selectedPatient.petName}</h3>
+                    <p className="text-sm text-gray-500 mt-1">
+                      {selectedPatient.species} • {selectedPatient.breed}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      Tutor: {selectedPatient.ownerName}
+                    </p>
+                  </div>
+                  <div className="flex gap-3 justify-center">
+                    <Button
+                      variant="outline"
+                      onClick={() => setSelectedPatient(null)}
+                      className="h-12 px-6"
+                    >
+                      Voltar
+                    </Button>
+                    <Button
+                      onClick={handleStartConsultation}
+                      className="h-12 px-8 bg-[#EF6C50] hover:bg-[#E05C40] text-white text-base font-semibold"
+                    >
+                      <FileText className="w-5 h-5 mr-2" />
+                      Iniciar Atendimento
+                    </Button>
+                  </div>
                 </div>
               </div>
             ) : (
@@ -310,7 +347,7 @@ export function Dashboard() {
                     placeholder="Buscar por nome do pet, tutor ou raça..."
                     value={patientSearchQuery}
                     onChange={(e) => setPatientSearchQuery(e.target.value)}
-                    className="pl-12 h-12 text-base border-2 border-gray-200 focus-visible:border-[#2C5EAD] focus-visible:ring-0 focus-visible:ring-offset-0"
+                    className="pl-12 h-12 text-base border-2 border-gray-200 focus-visible:border-[#EF6C50] focus-visible:ring-0 focus-visible:ring-offset-0"
                   />
                 </div>
 

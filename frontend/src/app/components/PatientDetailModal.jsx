@@ -124,7 +124,7 @@ export function PatientDetailModal({ isOpen, onClose, onAddPetForOwner, onDelete
       <DialogContent className="sm:max-w-5xl max-h-[95vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
-            <FileText className="w-6 h-6 text-[#032048]" />
+            <FileText className="w-6 h-6 text-[#EF6C50]" />
             Ficha do Paciente - {patient.petName}
           </DialogTitle>
           <DialogDescription className="text-base">
@@ -197,7 +197,7 @@ export function PatientDetailModal({ isOpen, onClose, onAddPetForOwner, onDelete
                         }}
                         variant="outline"
                         size="sm"
-                        className="gap-2 text-[#032048] border-[#032048] hover:bg-[#CFEAF3]"
+                        className="gap-2 text-[#38A169] border-[#7DD87D] hover:bg-[#7DD87D]/10"
                       >
                         <Plus className="w-4 h-4" />
                         Adicionar outro pet
@@ -271,7 +271,7 @@ export function PatientDetailModal({ isOpen, onClose, onAddPetForOwner, onDelete
                   </Button>
                   <Button
                     type="submit"
-                    className="h-10 px-5 text-sm bg-[#FFB144] hover:bg-[#E59530]"
+                    className="h-10 px-5 text-sm bg-[#EF6C50] hover:bg-[#E05C40]"
                   >
                     <Save className="w-4 h-4 mr-2" />
                     Salvar Alterações
@@ -297,7 +297,7 @@ export function PatientDetailModal({ isOpen, onClose, onAddPetForOwner, onDelete
                   return (
                     <div
                       key={record.id}
-                      className="bg-white rounded-lg p-5 border-2 border-gray-200 hover:border-[#032048] transition-all"
+                      className="bg-white rounded-lg p-5 border-2 border-gray-200 hover:border-[#EF6C50] transition-all"
                     >
                       {/* Record Header */}
                       <div className="flex flex-col gap-4 mb-3">
@@ -445,7 +445,7 @@ export function PatientDetailModal({ isOpen, onClose, onAddPetForOwner, onDelete
                             <Button
                               onClick={handleSaveRecord}
                               size="sm"
-                              className="gap-2 flex-1 sm:flex-none bg-[#FFB144] hover:bg-[#E59530]"
+                              className="gap-2 flex-1 sm:flex-none bg-[#EF6C50] hover:bg-[#E05C40]"
                             >
                               <Save className="w-4 h-4" />
                               Salvar Prontuário

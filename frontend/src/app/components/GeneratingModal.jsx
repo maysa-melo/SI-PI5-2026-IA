@@ -13,7 +13,7 @@ export function GeneratingModal({ isOpen }) {
       <DialogContent className="sm:max-w-4xl max-h-[98vh]" hideCloseButton>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
-            <FileText className="w-6 h-6 text-[#2C5EAD]" />
+            <FileText className="w-6 h-6 text-[#EF6C50]" />
             Processando Consulta
           </DialogTitle>
           <DialogDescription className="text-base">
@@ -22,7 +22,7 @@ export function GeneratingModal({ isOpen }) {
         </DialogHeader>
 
         <div className="flex flex-col items-center justify-center py-20">
-          <Loader2 className="w-16 h-16 text-[#2C5EAD] animate-spin mb-6" />
+          <Loader2 className="w-16 h-16 text-[#EF6C50] animate-spin mb-6" />
           <h3 className="text-2xl font-semibold text-gray-900 mb-3">
             Gerando Prontuário...
           </h3>

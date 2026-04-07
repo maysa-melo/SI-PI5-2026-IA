@@ -1,3 +1,5 @@
+import api from '../utils/api';
+
 import { useState } from 'react';
 import { Plus, PawPrint, User, Info } from 'lucide-react';
 import { Button } from './ui/button';
@@ -53,12 +55,68 @@ export function NewPatientModal({ isOpen, onClose, onSubmit, existingOwner }) {
     importantNotes: ''
   });
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  try {
+    let clienteId = existingOwner?.id;
+
+    // 🧍 Se NÃO tiver tutor, cria
+    if (!existingOwner) {
+      const clienteResponse = await api.post('/clientes', {
+        nome: formData.ownerName,
+        sexo: formData.ownerSexo || null,
+        nacionalidade: formData.ownerNacionalidade || null,
+        estado_civil: formData.ownerEstadoCivil || null,
+        cpf: formData.ownerCPF || null,
+        rg: formData.ownerRG || null,
+        data_nascimento: formData.ownerDataNascimento || null,
+        profissao: formData.ownerProfissao || null,
+        como_conheceu: formData.ownerComoConheceu || null,
+        matricula_convenio: formData.ownerMatriculaConvenio || null,
+        email: formData.ownerEmail || null,
+        facebook: formData.ownerFacebook || null,
+        instagram: formData.ownerInstagram || null,
+        marcacao_neutra: formData.ownerMarcacaoNeutra || null,
+        marcacao_positiva: formData.ownerMarcacaoPositiva || null,
+        foto_url: formData.ownerFotoUrl || null,
+      });
+
+      clienteId = clienteResponse.data.id;
+    }
+
+    // 🐶 Criar pet
+    await api.post('/pets', {
+      cliente_id: clienteId,
+      nome: formData.petName,
+      especie: formData.species === 'Outro'
+        ? formData.speciesCustom
+        : formData.species,
+      raca: formData.breed || null,
+      vivo: formData.petVivo,
+      peso_kg: formData.petPeso ? parseFloat(formData.petPeso) : null,
+      data_nascimento: formData.birthDate || null,
+      sexo: formData.petSexo || null,
+      castrado: formData.petCastrado === 'true',
+      porte: formData.petPorte || null,
+      cor: formData.petCor || null,
+      pelagem: formData.petPelagem || null,
+      pedigree: formData.petPedigree || null,
+      chip: formData.petChip || null,
+      matricula_convenio: formData.petMatriculaConvenio || null,
+      foto_url: formData.petFotoUrl || null,
+    });
+
     alert('Paciente cadastrado com sucesso!');
-    onSubmit();
-    onClose();
-  };
+
+    onSubmit(); // atualizar lista
+    onClose();  // fechar modal
+
+  } catch (error) {
+    console.error(error);
+    alert('Erro ao cadastrar paciente');
+  }
+};
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

@@ -44,3 +44,15 @@ class Pet(Base):
     matricula_convenio = Column(String(50), nullable=True)
     foto_url = Column(Text, nullable=True)
     criado_em = Column(TIMESTAMP, server_default=func.now())
+
+class Prontuario(Base):
+    __tablename__ = "prontuarios"
+
+    id = Column(Integer, primary_key=True, index=True)
+    pet_id = Column(Integer, ForeignKey("pets.id", ondelete="CASCADE"), nullable=False)
+    tipo = Column(String(100), nullable=True)
+    veterinario = Column(String(150), nullable=True)
+    resumo = Column(Text, nullable=True)
+    diagnostico = Column(Text, nullable=True)
+    tratamento = Column(Text, nullable=True)
+    criado_em = Column(TIMESTAMP, server_default=func.now())

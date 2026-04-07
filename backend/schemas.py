@@ -2,6 +2,7 @@ from pydantic import BaseModel
 from typing import Optional
 from datetime import date
 from decimal import Decimal
+from datetime import datetime
 
 class ClienteCreate(BaseModel):
     nome: str
@@ -86,3 +87,24 @@ class PetUpdate(BaseModel):
     chip: Optional[str] = None
     matricula_convenio: Optional[str] = None
     foto_url: Optional[str] = None
+class ProntuarioCreate(BaseModel):
+    pet_id: int
+    tipo: Optional[str] = None
+    veterinario: Optional[str] = None
+    resumo: Optional[str] = None
+    diagnostico: Optional[str] = None
+    tratamento: Optional[str] = None
+
+class ProntuarioResponse(ProntuarioCreate):
+    id: int
+    criado_em: datetime
+
+    class Config:
+        from_attributes = True
+
+class ProntuarioUpdate(BaseModel):
+    tipo: Optional[str] = None
+    veterinario: Optional[str] = None
+    resumo: Optional[str] = None
+    diagnostico: Optional[str] = None
+    tratamento: Optional[str] = None

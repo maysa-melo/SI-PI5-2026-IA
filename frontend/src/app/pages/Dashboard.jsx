@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Search, Plus, FileText, Clock, Users, PawPrint, ClipboardList, User } from 'lucide-react';
 import { Button } from '../components/ui/button';
@@ -14,59 +14,11 @@ import { ConsultationModal } from '../components/ConsultationModal';
 import { NewPatientModal } from '../components/NewPatientModal';
 import { GeneratingModal } from '../components/GeneratingModal';
 import { RecordResultModal } from '../components/RecordResultModal';
-import { mockPatients } from '../data/patients';
-
-// Mock data for recent patients
-const recentPatients = [
-  {
-    id: 1,
-    petName: 'Rex',
-    species: 'Cão',
-    breed: 'Labrador',
-    ownerName: 'Maria Silva',
-    lastVisit: '2026-03-17',
-    time: '14:30'
-  },
-  {
-    id: 2,
-    petName: 'Mimi',
-    species: 'Gato',
-    breed: 'Siamês',
-    ownerName: 'João Santos',
-    lastVisit: '2026-03-17',
-    time: '11:15'
-  },
-  {
-    id: 3,
-    petName: 'Bob',
-    species: 'Cão',
-    breed: 'Bulldog',
-    ownerName: 'Ana Costa',
-    lastVisit: '2026-03-16',
-    time: '16:45'
-  },
-  {
-    id: 4,
-    petName: 'Luna',
-    species: 'Gato',
-    breed: 'Persa',
-    ownerName: 'Pedro Oliveira',
-    lastVisit: '2026-03-16',
-    time: '10:20'
-  },
-  {
-    id: 5,
-    petName: 'Thor',
-    species: 'Cão',
-    breed: 'Pastor Alemão',
-    ownerName: 'Carlos Mendes',
-    lastVisit: '2026-03-15',
-    time: '15:00'
-  },
-];
+import api from '../utils/api';
 
 export function Dashboard() {
   const navigate = useNavigate();
+
   const [searchQuery, setSearchQuery] = useState('');
   const [isNewRecordOpen, setIsNewRecordOpen] = useState(false);
   const [patientSearchQuery, setPatientSearchQuery] = useState('');
@@ -76,7 +28,43 @@ export function Dashboard() {
   const [isNewPatientModalOpen, setIsNewPatientModalOpen] = useState(false);
   const [isGeneratingModalOpen, setIsGeneratingModalOpen] = useState(false);
   const [isRecordResultModalOpen, setIsRecordResultModalOpen] = useState(false);
+
+  const [pets, setPets] = useState([]);
+  const [clientes, setClientes] = useState([]);
+  const [prontuarios, setProntuarios] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   const countdownRef = useRef(null);
+
+  useEffect(() => {
+    carregarDados();
+
+    return () => {
+      if (countdownRef.current) {
+        clearInterval(countdownRef.current);
+      }
+    };
+  }, []);
+
+  const carregarDados = async () => {
+    try {
+      setLoading(true);
+
+      const [petsResponse, clientesResponse, prontuariosResponse] = await Promise.all([
+        api.get('/pets'),
+        api.get('/clientes'),
+        api.get('/prontuarios')
+      ]);
+
+      setPets(petsResponse.data || []);
+      setClientes(clientesResponse.data || []);
+      setProntuarios(prontuariosResponse.data || []);
+    } catch (error) {
+      console.error('Erro ao carregar dados do dashboard:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleNewPatient = () => {
     setIsNewPatientModalOpen(true);
@@ -102,6 +90,7 @@ export function Dashboard() {
     let count = 3;
     countdownRef.current = setInterval(() => {
       count -= 1;
+
       if (count === 0) {
         clearInterval(countdownRef.current);
         countdownRef.current = null;
@@ -115,50 +104,131 @@ export function Dashboard() {
   };
 
   const formatDate = (dateStr) => {
+    if (!dateStr) return '--/--';
+
     const date = new Date(dateStr);
+    if (Number.isNaN(date.getTime())) return '--/--';
+
     const today = new Date();
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
-    
+
     if (date.toDateString() === today.toDateString()) {
       return 'Hoje';
     } else if (date.toDateString() === yesterday.toDateString()) {
       return 'Ontem';
     } else {
-      return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+      return date.toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit'
+      });
     }
   };
 
-  // Filter patients based on search query
-  const filteredPatients = recentPatients.filter((patient) => {
-    const query = searchQuery.toLowerCase();
+  const formatTime = (dateStr) => {
+    if (!dateStr) return '--:--';
+
+    const date = new Date(dateStr);
+    if (Number.isNaN(date.getTime())) return '--:--';
+
+    return date.toLocaleTimeString('pt-BR', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const getOwnerName = (clienteId) => {
+    const cliente = clientes.find((c) => c.id === clienteId);
+    return cliente?.nome || `Tutor ID: ${clienteId}`;
+  };
+
+  const getPatientDisplayData = (pet) => {
+    return {
+      id: pet.id,
+      petName: pet.nome || 'Sem nome',
+      species: pet.especie || 'Não informada',
+      breed: pet.raca || 'Raça não informada',
+      ownerName: getOwnerName(pet.cliente_id),
+      ownerCPF: clientes.find((c) => c.id === pet.cliente_id)?.cpf || '',
+      age: pet.data_nascimento ? `Nasc.: ${formatDate(pet.data_nascimento)}` : 'Idade não informada',
+      lastVisit: pet.criado_em || pet.data_nascimento || null,
+      time: pet.criado_em || null,
+      raw: pet
+    };
+  };
+
+  const getPetById = (petId) => {
+    return pets.find((pet) => pet.id === petId);
+  };
+
+  const getClienteById = (clienteId) => {
+    return clientes.find((cliente) => cliente.id === clienteId);
+  };
+
+  const allPatients = pets.map(getPatientDisplayData);
+
+  const modalFilteredPatients = allPatients.filter((patient) => {
+    const query = patientSearchQuery.toLowerCase().trim();
+
+    if (!query) return true;
+
     return (
       patient.petName.toLowerCase().includes(query) ||
       patient.ownerName.toLowerCase().includes(query) ||
       patient.breed.toLowerCase().includes(query) ||
-      patient.species.toLowerCase().includes(query)
+      patient.species.toLowerCase().includes(query) ||
+      patient.ownerCPF.toLowerCase().includes(query)
     );
   });
 
+  const recentAppointments = prontuarios
+    .slice()
+    .sort((a, b) => new Date(b.criado_em) - new Date(a.criado_em))
+    .map((prontuario) => {
+      const pet = getPetById(prontuario.pet_id);
+      const tutor = pet ? getClienteById(pet.cliente_id) : null;
+
+      return {
+        id: prontuario.id,
+        petId: pet?.id,
+        petName: pet?.nome || 'Pet não encontrado',
+        species: pet?.especie || 'Não informada',
+        breed: pet?.raca || 'Raça não informada',
+        ownerName: tutor?.nome || 'Tutor não encontrado',
+        type: prontuario.tipo || 'Consulta',
+        createdAt: prontuario.criado_em,
+      };
+    })
+    .filter((item) => {
+      const query = searchQuery.toLowerCase().trim();
+
+      if (!query) return true;
+
+      return (
+        item.petName.toLowerCase().includes(query) ||
+        item.ownerName.toLowerCase().includes(query) ||
+        item.breed.toLowerCase().includes(query) ||
+        item.species.toLowerCase().includes(query) ||
+        item.type.toLowerCase().includes(query)
+      );
+    })
+    .slice(0, 5);
+
   return (
     <div className="flex flex-col min-h-screen bg-white">
-      {/* Header */}
       <header className="bg-white border-b border-gray-200 px-4 sm:px-8 py-6 lg:pl-8 pl-20">
         <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">Bem-vindo ao AnimalTalk</h1>
         <p className="text-sm text-gray-500 mt-1">Gerencie seus atendimentos de forma rápida e eficiente</p>
       </header>
 
-      {/* Main Content */}
       <div className="flex-1 overflow-auto px-4 sm:px-8 py-6 sm:py-8">
         <div className="max-w-4xl mx-auto space-y-8">
-          {/* Statistics Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Total Prontuários */}
             <div className="bg-gradient-to-br from-[#7DD87D]/10 to-[#7DD87D]/20 rounded-xl shadow-md border border-[#7DD87D]/25 p-6 hover:shadow-lg transition-shadow">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-[#1A2332]/70 font-medium">Total de Prontuários</p>
-                  <p className="text-3xl font-bold text-[#1A2332] mt-2">18</p>
+                  <p className="text-3xl font-bold text-[#1A2332] mt-2">{prontuarios.length}</p>
                 </div>
                 <div className="w-14 h-14 rounded-full bg-[#38A169]/12 flex items-center justify-center">
                   <ClipboardList className="w-7 h-7 text-[#38A169]" />
@@ -166,12 +236,11 @@ export function Dashboard() {
               </div>
             </div>
 
-            {/* Total Pacientes */}
             <div className="bg-gradient-to-br from-[#EF6C50]/8 to-[#EF6C50]/16 rounded-xl shadow-md border border-[#EF6C50]/15 p-6 hover:shadow-lg transition-shadow">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-[#1A2332]/70 font-medium">Pacientes Cadastrados</p>
-                  <p className="text-3xl font-bold text-[#1A2332] mt-2">6</p>
+                  <p className="text-3xl font-bold text-[#1A2332] mt-2">{pets.length}</p>
                 </div>
                 <div className="w-14 h-14 rounded-full bg-[#EF6C50]/12 flex items-center justify-center">
                   <PawPrint className="w-7 h-7 text-[#EF6C50]" />
@@ -179,12 +248,11 @@ export function Dashboard() {
               </div>
             </div>
 
-            {/* Total Tutores */}
             <div className="bg-gradient-to-br from-[#1c5ca6]/6 to-[#1c5ca6]/12 rounded-xl shadow-md border border-[#1c5ca6]/10 p-6 hover:shadow-lg transition-shadow">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-[#1A2332]/70 font-medium">Tutores Cadastrados</p>
-                  <p className="text-3xl font-bold text-[#1A2332] mt-2">6</p>
+                  <p className="text-3xl font-bold text-[#1A2332] mt-2">{clientes.length}</p>
                 </div>
                 <div className="w-14 h-14 rounded-full bg-[#1c5ca6]/10 flex items-center justify-center">
                   <Users className="w-7 h-7 text-[#1c5ca6]" />
@@ -193,16 +261,14 @@ export function Dashboard() {
             </div>
           </div>
 
-          {/* Search and Quick Actions */}
           <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
             <div className="flex flex-col lg:flex-row gap-4">
-              {/* Search Bar */}
               <div className="flex-1">
                 <div className="relative">
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-gray-400" />
                   <Input
                     type="text"
-                    placeholder="Buscar nos últimos atendimentos (Nome, Tutor ou Raça)"
+                    placeholder="Buscar nos últimos atendimentos (Nome, Tutor, Raça ou Tipo)"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-14 pr-4 h-14 text-base border-2 border-gray-200 focus-visible:border-[#EF6C50] focus-visible:ring-0 focus-visible:ring-offset-0"
@@ -210,7 +276,6 @@ export function Dashboard() {
                 </div>
               </div>
 
-              {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row gap-3 lg:w-auto">
                 <Button
                   onClick={handleEmergency}
@@ -233,48 +298,62 @@ export function Dashboard() {
             </div>
           </div>
 
-          {/* Recent Patients */}
           <div className="bg-white rounded-xl shadow border border-gray-100">
             <div className="px-6 py-4 border-b border-gray-100">
               <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                 <Clock className="w-5 h-5 text-[#38A169]" />
                 Últimos Atendimentos
               </h2>
-              <p className="text-sm text-gray-500 mt-1">Acesso rápido aos pacientes recentes</p>
+              <p className="text-sm text-gray-500 mt-1">Acesso rápido aos atendimentos mais recentes</p>
             </div>
 
             <div className="divide-y divide-gray-100">
-              {filteredPatients.map((patient) => (
-                <button
-                  key={patient.id}
-                  onClick={() => handlePatientClick(patient)}
-                  className="w-full px-6 py-4 hover:bg-gray-50 transition-colors text-left"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3">
-                        <h3 className="font-semibold text-gray-900">{patient.petName}</h3>
-                        <span className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded">
-                          {patient.species}
-                        </span>
+              {loading ? (
+                <div className="px-6 py-8 text-center text-gray-500">
+                  Carregando atendimentos...
+                </div>
+              ) : recentAppointments.length > 0 ? (
+                recentAppointments.map((appointment) => (
+                  <button
+                    key={appointment.id}
+                    onClick={() => appointment.petId && navigate(`/dashboard/pacientes/${appointment.petId}`)}
+                    className="w-full px-6 py-4 hover:bg-gray-50 transition-colors text-left"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3">
+                          <h3 className="font-semibold text-gray-900">{appointment.petName}</h3>
+                          <span className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded">
+                            {appointment.species}
+                          </span>
+                        </div>
+
+                        <p className="text-sm text-gray-600 mt-1">
+                          {appointment.breed} • Tutor: {appointment.ownerName}
+                        </p>
+
+                        <p className="text-xs text-gray-500 mt-1">
+                          {appointment.type}
+                        </p>
                       </div>
-                      <p className="text-sm text-gray-600 mt-1">
-                        {patient.breed} • Tutor: {patient.ownerName}
-                      </p>
+
+                      <div className="text-right text-sm text-gray-500">
+                        <div>{formatDate(appointment.createdAt)}</div>
+                        <div className="text-xs">{formatTime(appointment.createdAt)}</div>
+                      </div>
                     </div>
-                    <div className="text-right text-sm text-gray-500">
-                      <div>{formatDate(patient.lastVisit)}</div>
-                      <div className="text-xs">{patient.time}</div>
-                    </div>
-                  </div>
-                </button>
-              ))}
+                  </button>
+                ))
+              ) : (
+                <div className="px-6 py-8 text-center text-gray-500">
+                  Nenhum atendimento encontrado.
+                </div>
+              )}
             </div>
           </div>
         </div>
       </div>
 
-      {/* New Record Dialog */}
       <Dialog open={isNewRecordOpen} onOpenChange={setIsNewRecordOpen}>
         <DialogContent className="sm:max-w-4xl max-h-[98vh]">
           <DialogHeader>
@@ -288,7 +367,6 @@ export function Dashboard() {
           </DialogHeader>
 
           <div className="space-y-4">
-            {/* Countdown Screen */}
             {countdown !== null && countdown > 0 ? (
               <div className="flex items-center justify-center h-[400px]">
                 <div className="text-center">
@@ -304,7 +382,6 @@ export function Dashboard() {
                 </div>
               </div>
             ) : selectedPatient && countdown === null ? (
-              /* Confirmation Screen */
               <div className="flex items-center justify-center h-[400px]">
                 <div className="text-center space-y-6">
                   <div className="w-20 h-20 rounded-full bg-[#EF6C50]/10 flex items-center justify-center mx-auto">
@@ -339,7 +416,6 @@ export function Dashboard() {
               </div>
             ) : (
               <>
-                {/* Search Bar */}
                 <div className="relative">
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                   <Input
@@ -351,37 +427,18 @@ export function Dashboard() {
                   />
                 </div>
 
-                {/* Patient List */}
                 <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
                   <div className="px-4 py-2.5 border-b border-gray-200 bg-gray-50">
                     <h3 className="font-semibold text-gray-900 text-sm">
                       {patientSearchQuery
-                        ? `${mockPatients.filter((p) => {
-                            const query = patientSearchQuery.toLowerCase();
-                            return (
-                              p.petName.toLowerCase().includes(query) ||
-                              p.ownerName.toLowerCase().includes(query) ||
-                              p.breed.toLowerCase().includes(query) ||
-                              p.species.toLowerCase().includes(query)
-                            );
-                          }).length} paciente(s) encontrado(s)`
+                        ? `${modalFilteredPatients.length} paciente(s) encontrado(s)`
                         : 'Todos os Pacientes'}
                     </h3>
                   </div>
 
                   <div className="divide-y divide-gray-100 max-h-[400px] overflow-y-auto">
-                    {mockPatients
-                      .filter((patient) => {
-                        const query = patientSearchQuery.toLowerCase();
-                        return (
-                          patient.petName.toLowerCase().includes(query) ||
-                          patient.ownerName.toLowerCase().includes(query) ||
-                          patient.breed.toLowerCase().includes(query) ||
-                          patient.species.toLowerCase().includes(query) ||
-                          patient.ownerCPF.includes(query)
-                        );
-                      })
-                      .map((patient) => (
+                    {modalFilteredPatients.length > 0 ? (
+                      modalFilteredPatients.map((patient) => (
                         <button
                           key={patient.id}
                           onClick={() => handleSelectPatient(patient)}
@@ -405,7 +462,12 @@ export function Dashboard() {
                             </div>
                           </div>
                         </button>
-                      ))}
+                      ))
+                    ) : (
+                      <div className="px-4 py-8 text-center text-gray-500">
+                        Nenhum paciente encontrado.
+                      </div>
+                    )}
                   </div>
                 </div>
               </>
@@ -414,38 +476,41 @@ export function Dashboard() {
         </DialogContent>
       </Dialog>
 
-      {/* Consultation Modal */}
       <ConsultationModal
         key={isConsultationOpen ? 'open' : 'closed'}
-        isOpen={isConsultationOpen} 
+        isOpen={isConsultationOpen}
         onClose={() => setIsConsultationOpen(false)}
         patient={selectedPatient}
-        onFinalize={() => {
-          setIsConsultationOpen(false);
-          setIsGeneratingModalOpen(true);
-          
-          // Simulate AI processing time
-          setTimeout(() => {
-            setIsGeneratingModalOpen(false);
-            setIsRecordResultModalOpen(true);
-          }, 3000);
+        onFinalize={async (consultationData) => {
+          try {
+            await api.post('/prontuarios', consultationData);
+            await carregarDados();
+
+            setIsConsultationOpen(false);
+            setIsGeneratingModalOpen(true);
+
+            setTimeout(() => {
+              setIsGeneratingModalOpen(false);
+              setIsRecordResultModalOpen(true);
+            }, 3000);
+          } catch (error) {
+            console.error('Erro ao salvar prontuário:', error);
+            alert('Erro ao salvar prontuário');
+          }
         }}
       />
 
-      {/* New Patient Modal */}
       <NewPatientModal
         isOpen={isNewPatientModalOpen}
         onClose={() => setIsNewPatientModalOpen(false)}
-        onSubmit={() => {
-          // Refresh patient list if needed
-          console.log('Patient registered successfully');
+        onSubmit={async () => {
+          await carregarDados();
+          setIsNewPatientModalOpen(false);
         }}
       />
 
-      {/* Generating Modal */}
       <GeneratingModal isOpen={isGeneratingModalOpen} />
 
-      {/* Record Result Modal */}
       <RecordResultModal
         key={isRecordResultModalOpen ? 'open' : 'closed'}
         isOpen={isRecordResultModalOpen}

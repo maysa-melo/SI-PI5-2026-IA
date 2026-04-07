@@ -16,7 +16,6 @@ export function ConsultationModal({ isOpen, onClose, patient, onFinalize }) {
   const [isPaused, setIsPaused] = useState(false);
   const [seconds, setSeconds] = useState(0);
 
-  // Timer effect
   useEffect(() => {
     let interval = null;
 
@@ -31,17 +30,35 @@ export function ConsultationModal({ isOpen, onClose, patient, onFinalize }) {
     };
   }, [isOpen, isRecording, isPaused]);
 
+  useEffect(() => {
+    if (isOpen) {
+      setIsRecording(true);
+      setIsPaused(false);
+      setSeconds(0);
+    }
+  }, [isOpen]);
+
   const handlePauseResume = () => {
     setIsPaused(!isPaused);
   };
 
   const handleFinalize = () => {
     setIsRecording(false);
-    onFinalize();
+
+    const consultationData = {
+      pet_id: patient.id,
+      tipo: 'Consulta',
+      veterinario: 'Veterinário não informado',
+      resumo: `Atendimento finalizado com duração de ${formatTime(seconds)}.`,
+      diagnostico: 'Diagnóstico não informado',
+      tratamento: 'Tratamento não informado'
+    };
+
+    onFinalize(consultationData);
   };
 
   const handleClose = () => {
-    if (confirm('Deseja realmente sair? A gravação será perdida.')) {
+    if (window.confirm('Deseja realmente sair? A gravação será perdida.')) {
       onClose();
     }
   };
@@ -59,26 +76,27 @@ export function ConsultationModal({ isOpen, onClose, patient, onFinalize }) {
         </DialogHeader>
 
         <div className="space-y-3">
-          {/* Patient Profile - Minimal */}
           <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
             <div className="flex items-center gap-3">
               <div className="relative flex items-center justify-center w-10 h-10 rounded-full bg-[#7DD87D]/15 text-[#38A169]">
-                <span className="text-base font-semibold">{patient.petName.charAt(0)}</span>
+                <span className="text-base font-semibold">
+                  {(patient.petName || patient.nome || 'P').charAt(0)}
+                </span>
                 <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
               </div>
+
               <div className="flex-1">
-                <h2 className="text-sm font-semibold text-gray-900">{patient.petName}</h2>
-                <p className="text-xs text-gray-500">{patient.breed} • {patient.ownerName}</p>
-                {patient.allergies && patient.allergies.length > 0 && (
-                  <p className="text-xs text-red-600 mt-0.5 font-medium">⚠️ Alergias: {patient.allergies.join(', ')}</p>
-                )}
+                <h2 className="text-sm font-semibold text-gray-900">
+                  {patient.petName || patient.nome}
+                </h2>
+                <p className="text-xs text-gray-500">
+                  {patient.breed || patient.raca || 'Raça não informada'} • {patient.ownerName || `Tutor ID ${patient.cliente_id}`}
+                </p>
               </div>
             </div>
           </div>
 
-          {/* Recording Visualization */}
           <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-            {/* Timer */}
             <div className="text-center mb-3">
               <div className="inline-flex items-center gap-2 px-3 py-1 bg-white rounded-full mb-2 border border-gray-200">
                 <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
@@ -86,20 +104,19 @@ export function ConsultationModal({ isOpen, onClose, patient, onFinalize }) {
                   {isPaused ? 'Pausado' : 'Gravando'}
                 </span>
               </div>
+
               <div className="text-3xl font-semibold text-gray-900 tabular-nums">
                 {formatTime(seconds)}
               </div>
             </div>
 
-            {/* Waveform Visualizer */}
             <AudioWaveform isActive={isRecording && !isPaused} />
 
             <p className="text-center text-xs text-gray-500 mt-2">
-              A IA está transcrevendo e organizandoções em tempo real
+              A IA está transcrevendo e organizando informações em tempo real
             </p>
           </div>
 
-          {/* Control Buttons */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
             <Button
               onClick={handlePauseResume}
@@ -128,7 +145,6 @@ export function ConsultationModal({ isOpen, onClose, patient, onFinalize }) {
             </Button>
           </div>
 
-          {/* Info */}
           <div className="text-center text-xs text-gray-400 pb-1">
             <p>
               Fale naturalmente sobre os sintomas, diagnóstico e tratamento.

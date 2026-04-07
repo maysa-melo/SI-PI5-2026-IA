@@ -3,10 +3,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from database import engine, SessionLocal
-from models import Cliente, Pet
+from models import Cliente, Pet, Prontuario
 from schemas import (
     ClienteCreate, ClienteResponse, ClienteUpdate,
-    PetCreate, PetResponse, PetUpdate
+    PetCreate, PetResponse, PetUpdate,
+    ProntuarioCreate, ProntuarioResponse, ProntuarioUpdate
 )
 
 app = FastAPI()
@@ -123,3 +124,49 @@ def deletar_pet(pet_id: int, db: Session = Depends(get_db)):
 @app.get("/clientes/{cliente_id}/pets", response_model=list[PetResponse])
 def listar_pets_do_cliente(cliente_id: int, db: Session = Depends(get_db)):
     return db.query(Pet).filter(Pet.cliente_id == cliente_id).all()
+
+@app.post("/prontuarios", response_model=ProntuarioResponse)
+def criar_prontuario(prontuario: ProntuarioCreate, db: Session = Depends(get_db)):
+    novo_prontuario = Prontuario(**prontuario.dict())
+    db.add(novo_prontuario)
+    db.commit()
+    db.refresh(novo_prontuario)
+    return novo_prontuario
+
+@app.get("/prontuarios", response_model=list[ProntuarioResponse])
+def listar_prontuarios(db: Session = Depends(get_db)):
+    return db.query(Prontuario).all()
+
+@app.get("/prontuarios/{prontuario_id}", response_model=ProntuarioResponse)
+def buscar_prontuario(prontuario_id: int, db: Session = Depends(get_db)):
+    prontuario = db.query(Prontuario).filter(Prontuario.id == prontuario_id).first()
+    if not prontuario:
+        return {"erro": "Prontuário não encontrado"}
+    return prontuario
+
+@app.get("/pets/{pet_id}/prontuarios", response_model=list[ProntuarioResponse])
+def listar_prontuarios_do_pet(pet_id: int, db: Session = Depends(get_db)):
+    return db.query(Prontuario).filter(Prontuario.pet_id == pet_id).order_by(Prontuario.id.desc()).all()
+
+@app.put("/prontuarios/{prontuario_id}", response_model=ProntuarioResponse)
+def atualizar_prontuario(prontuario_id: int, dados: ProntuarioUpdate, db: Session = Depends(get_db)):
+    prontuario = db.query(Prontuario).filter(Prontuario.id == prontuario_id).first()
+    if not prontuario:
+        return {"erro": "Prontuário não encontrado"}
+
+    for chave, valor in dados.dict(exclude_unset=True).items():
+        setattr(prontuario, chave, valor)
+
+    db.commit()
+    db.refresh(prontuario)
+    return prontuario
+
+@app.delete("/prontuarios/{prontuario_id}")
+def deletar_prontuario(prontuario_id: int, db: Session = Depends(get_db)):
+    prontuario = db.query(Prontuario).filter(Prontuario.id == prontuario_id).first()
+    if not prontuario:
+        return {"erro": "Prontuário não encontrado"}
+
+    db.delete(prontuario)
+    db.commit()
+    return {"mensagem": "Prontuário deletado com sucesso"}

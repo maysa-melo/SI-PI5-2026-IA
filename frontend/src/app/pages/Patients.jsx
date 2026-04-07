@@ -139,7 +139,11 @@ export function Patients() {
       <NewPatientModal
         isOpen={isAddingPatient}
         onClose={handleCloseNewPatientModal}
-        onSubmit={handleCloseNewPatientModal}
+        onSubmit={async () => {
+          const response = await api.get('/pets');
+          setPatients(response.data);
+          handleCloseNewPatientModal();
+        }}
         existingOwner={existingOwner}
       />
     </div>

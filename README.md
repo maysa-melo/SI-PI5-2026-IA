@@ -1,122 +1,587 @@
-# 🤖 Projeto Integrado V - Inteligência Artificial (PUC-Campinas)
+# 🐾 AnimalTalk - Sistema de Prontuários Veterinários
 
-Este repositório contém a estrutura de um sistema que utiliza IA com **Python** no back-end e **React** no front-end.
-
----
-
-## 📂 Estrutura do Projeto
-
-O projeto é dividido em duas partes principais:
-
-- **frontend**: Interface visual onde o usuário interage.
-- **backend**: Onde a "mágica" da IA acontece.
+Projeto desenvolvido para o **Projeto Integrado V - Inteligência Artificial (PUC-Campinas)**.
+Este sistema permite gerenciar **tutores**, **pets** e **prontuários clínicos**, com integração entre **Front-end (React + Vite)**, **Back-end (FastAPI)** e **PostgreSQL**. O README original do projeto já trazia a base da estrutura, front, back e fluxo de Git, e este documento expande isso com o passo a passo completo para rodar tudo do zero. 
 
 ---
 
-## 🛠️ Pré-requisitos
+# ✅ O que o sistema faz hoje
 
-Antes de tudo, instale as ferramentas abaixo (só precisa fazer uma vez):
-
-- [Git](https://git-scm.com/downloads)
-- [Node.js](https://nodejs.org/) (versão LTS recomendada)
-- [Python](https://www.python.org/downloads/) (versão 3.10 ou superior)
+* Cadastro de tutores
+* Cadastro de pets
+* Criação de prontuários
+* Edição de prontuários
+* Exclusão de prontuários
+* Dashboard com dados reais
+* Histórico clínico real por paciente
+* Integração completa entre front, back e banco
 
 ---
 
-## 📥 1. Clonando o Repositório (primeira vez)
+# 🧱 Tecnologias utilizadas
+
+* **React + Vite** — front-end
+* **FastAPI** — back-end
+* **Python** — API
+* **PostgreSQL** — banco de dados
+* **pgAdmin** — gerenciamento visual do banco
+* **Axios** — comunicação entre front e back
+
+---
+
+# 💻 Sistemas compatíveis
+
+## Funciona para desenvolvimento local em:
+
+* **Windows**
+* **macOS**
+
+## Não é indicado para:
+
+* **iPhone / iPad (iOS)**
+* **Android**
+
+Esses dispositivos podem acessar o sistema pelo navegador depois de publicado, mas **não são ambientes adequados para rodar o projeto localmente**.
+
+---
+
+# 📂 Estrutura do projeto
+
+```text
+SI-PI5-2026-IA/
+├── backend/
+├── frontend/
+└── README.md
+```
+
+---
+
+# 🛠️ Pré-requisitos
+
+Instale antes de começar:
+
+## Obrigatórios
+
+* **Git**
+* **Node.js** (LTS recomendada)
+* **Python 3.10+**
+* **PostgreSQL**
+* **pgAdmin** (opcional, mas recomendado)
+
+## Links oficiais
+
+* Git
+* Node.js
+* Python
+* PostgreSQL
+* pgAdmin
+
+---
+
+# 📥 1. Clonar o repositório
 
 Abra o terminal e rode:
 
 ```bash
-git clone https://github.com/SEU-USUARIO/NOME-DO-REPO.git
+git clone https://github.com/maysa-melo/SI-PI5-2026-IA.git
+cd SI-PI5-2026-IA
 ```
-
-Depois entre na pasta do projeto:
-
-```bash
-cd NOME-DO-REPO
-```
-
-> Substitua o link acima pelo link real do repositório no GitHub.
 
 ---
 
-## 🌿 2. Criando sua Branch (só na primeira vez)
+# 🗄️ 2. Criar o banco de dados PostgreSQL
 
-Nunca trabalhe direto na `main`. Cada integrante tem a **sua própria branch permanente**, nomeada com o seu nome. Você vai sempre trabalhar nela e fazer merge na `main` quando estiver pronto.
+Você pode fazer isso pelo **pgAdmin** ou por SQL.
 
-### Padrão de nome de branch:
+---
 
+## Opção A — pelo pgAdmin
+
+1. Abra o **pgAdmin**
+2. Conecte no seu servidor PostgreSQL
+3. Clique com o botão direito em **Databases**
+4. Clique em **Create > Database**
+5. Crie um banco com um nome como:
+
+```text
+animaltalk
 ```
-nome
+
+---
+
+## Opção B — por SQL
+
+Abra o Query Tool no pgAdmin e rode:
+
+```sql
+CREATE DATABASE animaltalk;
 ```
 
-**Exemplos:**
-- `maysa`
-- `joao`
-- `julia`
+---
 
-### Como criar sua branch (só uma vez):
+# ⚙️ 3. Configurar a conexão do backend com o banco
 
-Primeiro, garanta que você está na `main` atualizada:
+Agora você precisa garantir que o backend esteja apontando para o banco que você criou.
+
+## Procure no backend
+
+Verifique o arquivo responsável pela conexão com banco, normalmente algo como:
+
+```text
+backend/database.py
+```
+
+ou um `.env`, se o projeto estiver usando variável de ambiente.
+
+## A conexão precisa bater com:
+
+* nome do banco
+* usuário do PostgreSQL
+* senha
+* host
+* porta
+
+## Exemplo de conexão local comum
+
+```python
+postgresql://postgres:SUA_SENHA@localhost:5432/animaltalk
+```
+
+## Confira estes dados:
+
+* **usuário:** normalmente `postgres`
+* **senha:** a senha que você definiu ao instalar o PostgreSQL
+* **host:** `localhost`
+* **porta:** `5432`
+* **banco:** `animaltalk`
+
+> Se o backend estiver apontando para outro banco, o sistema não vai salvar nem ler os dados corretos.
+
+---
+
+# 🧾 4. Criar as tabelas no banco
+
+O projeto usa estas tabelas principais:
+
+* `clientes`
+* `pets`
+* `prontuarios`
+
+## Se o projeto já criar tabelas automaticamente
+
+Se o backend tiver algo como `Base.metadata.create_all(...)`, basta rodar o backend e ele criará as tabelas automaticamente.
+
+## Se não criar automaticamente
+
+Se as tabelas não forem criadas automaticamente pelo backend, use as queries abaixo no pgAdmin > Query Tool.
+
+1. Tabela clientes
+CREATE TABLE clientes (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(150) NOT NULL,
+    sexo VARCHAR(30),
+    nacionalidade VARCHAR(60),
+    estado_civil VARCHAR(30),
+    cpf VARCHAR(14) UNIQUE,
+    rg VARCHAR(20),
+    data_nascimento DATE,
+    profissao VARCHAR(100),
+    como_conheceu VARCHAR(100),
+    matricula_convenio VARCHAR(50),
+    email VARCHAR(150),
+    facebook VARCHAR(150),
+    instagram VARCHAR(150),
+    marcacao_neutra TEXT,
+    marcacao_positiva TEXT,
+    foto_url TEXT,
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+2. Tabela pets
+CREATE TABLE pets (
+    id SERIAL PRIMARY KEY,
+    cliente_id INTEGER NOT NULL,
+    nome VARCHAR(100) NOT NULL,
+    especie VARCHAR(50) NOT NULL,
+    raca VARCHAR(100),
+    vivo BOOLEAN DEFAULT TRUE,
+    peso_kg NUMERIC(6,2),
+    data_nascimento DATE,
+    sexo VARCHAR(20),
+    castrado BOOLEAN,
+    porte VARCHAR(30),
+    cor VARCHAR(50),
+    pelagem VARCHAR(50),
+    pedigree VARCHAR(100),
+    chip VARCHAR(100),
+    matricula_convenio VARCHAR(50),
+    foto_url TEXT,
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_cliente
+        FOREIGN KEY (cliente_id)
+        REFERENCES clientes(id)
+        ON DELETE CASCADE
+);
+3. Tabela prontuarios
+CREATE TABLE prontuarios (
+    id SERIAL PRIMARY KEY,
+    pet_id INTEGER NOT NULL,
+    tipo VARCHAR(100),
+    veterinario VARCHAR(150),
+    resumo TEXT,
+    diagnostico TEXT,
+    tratamento TEXT,
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_pet
+        FOREIGN KEY (pet_id)
+        REFERENCES pets(id)
+        ON DELETE CASCADE
+);
+
+## Para conferir se as tabelas existem:
+
+No pgAdmin, vá em:
+
+```text
+Schemas > public > Tables
+```
+
+Você deve ver:
+
+* `clientes`
+* `pets`
+* `prontuarios`
+
+---
+
+# 🐍 5. Rodar o backend
+
+Abra um terminal na raiz do projeto e entre em:
+
+```bash
+cd backend
+```
+
+---
+
+## 5.1 Criar ambiente virtual
+
+### Windows
+
+```bash
+python -m venv venv
+```
+
+### macOS
+
+```bash
+python3 -m venv venv
+```
+
+---
+
+## 5.2 Ativar ambiente virtual
+
+### Windows
+
+```bash
+.\venv\Scripts\activate
+```
+
+### macOS
+
+```bash
+source venv/bin/activate
+```
+
+Se deu certo, o terminal vai mostrar algo como:
+
+```text
+(venv)
+```
+
+---
+
+## 5.3 Instalar dependências
+
+### Windows
+
+```bash
+pip install -r requirements.txt
+```
+
+### macOS
+
+```bash
+pip3 install -r requirements.txt
+```
+
+Se `pip3` não funcionar, use:
+
+```bash
+python3 -m pip install -r requirements.txt
+```
+
+---
+
+## 5.4 Rodar a API
+
+```bash
+uvicorn main:app --reload
+```
+
+Se estiver tudo certo, a API vai subir em:
+
+```text
+http://127.0.0.1:8000
+```
+
+E a documentação Swagger ficará em:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+---
+
+# 🧪 6. Testar se o backend está funcionando
+
+Abra no navegador:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+Verifique se existem endpoints como:
+
+* `/clientes`
+* `/pets`
+* `/prontuarios`
+
+Se esses endpoints aparecerem, o backend está no ar.
+
+---
+
+# 🎨 7. Rodar o frontend
+
+Abra **outro terminal** na raiz do projeto e entre em:
+
+```bash
+cd frontend
+```
+
+## 7.1 Instalar dependências
+
+```bash
+npm install
+```
+
+## 7.2 Rodar o front
+
+```bash
+npm run dev
+```
+
+O terminal mostrará algo como:
+
+```text
+http://localhost:5173
+```
+
+Abra esse endereço no navegador.
+
+---
+
+# 🔗 8. Verificar se front e back estão conectados
+
+O frontend deve estar apontando para o backend local.
+
+Confira no arquivo da API do front, normalmente algo como:
+
+```text
+frontend/src/app/utils/api.js
+```
+
+A baseURL deve ser:
+
+```js
+http://127.0.0.1:8000
+```
+
+Se estiver diferente, ajuste.
+
+---
+
+# ✅ 9. Fluxo de teste completo
+
+Depois de subir tudo, siga este roteiro:
+
+## 9.1 Testar cadastro de paciente
+
+1. Abrir o sistema no navegador
+2. Clicar em **Novo Paciente**
+3. Cadastrar tutor e pet
+4. Confirmar se salvou no banco
+
+### Conferir no pgAdmin:
+
+```sql
+SELECT * FROM clientes ORDER BY id DESC;
+SELECT * FROM pets ORDER BY id DESC;
+```
+
+---
+
+## 9.2 Testar criação de prontuário
+
+1. Ir para o dashboard
+2. Clicar em **Novo Prontuário**
+3. Escolher um paciente
+4. Iniciar atendimento
+5. Finalizar
+
+### Conferir no pgAdmin:
+
+```sql
+SELECT * FROM prontuarios ORDER BY id DESC;
+```
+
+---
+
+## 9.3 Testar edição de prontuário
+
+1. Abrir um paciente
+2. Entrar no perfil ou histórico
+3. Editar diagnóstico, resumo ou tratamento
+4. Salvar
+
+### Conferir no banco:
+
+```sql
+SELECT * FROM prontuarios ORDER BY id DESC;
+```
+
+---
+
+## 9.4 Testar exclusão de prontuário
+
+1. Abrir um paciente
+2. Localizar prontuário
+3. Excluir
+4. Confirmar remoção visual e no banco
+
+---
+
+## 9.5 Testar dashboard
+
+Conferir se o dashboard mostra corretamente:
+
+* total de prontuários
+* pacientes cadastrados
+* tutores cadastrados
+* últimos atendimentos reais
+
+---
+
+# 🔍 Consultas úteis no banco
+
+```sql
+SELECT * FROM clientes ORDER BY id DESC;
+SELECT * FROM pets ORDER BY id DESC;
+SELECT * FROM prontuarios ORDER BY id DESC;
+```
+
+Para contar registros:
+
+```sql
+SELECT COUNT(*) FROM clientes;
+SELECT COUNT(*) FROM pets;
+SELECT COUNT(*) FROM prontuarios;
+```
+
+---
+
+# 🧯 Problemas comuns e solução
+
+## Erro ao rodar `npm install`
+
+Verifique se o Node.js foi instalado corretamente:
+
+```bash
+node -v
+npm -v
+```
+
+---
+
+## Erro ao rodar `uvicorn`
+
+Verifique se o ambiente virtual está ativado e se as dependências foram instaladas.
+
+---
+
+## Erro de conexão com banco
+
+Verifique:
+
+* nome do banco
+* usuário
+* senha
+* porta
+* conexão no `database.py` ou `.env`
+
+---
+
+## Frontend abre mas não carrega dados
+
+Verifique:
+
+* se o backend está rodando
+* se a `baseURL` do Axios está correta
+* se o CORS do backend está permitindo `http://localhost:5173`
+
+---
+
+## Tabela `prontuarios` não existe
+
+Crie a tabela manualmente no pgAdmin ou confirme se o backend cria automaticamente.
+
+---
+
+## Backend sobe, mas `/docs` não mostra endpoint novo
+
+Pare e rode novamente:
+
+```bash
+uvicorn main:app --reload
+```
+
+---
+
+# 🌿 Fluxo de Git para a equipe
+
+## Atualizar projeto
 
 ```bash
 git checkout main
 git pull origin main
 ```
 
-Agora crie e entre na sua branch:
+## Criar branch
 
 ```bash
 git checkout -b seu-nome
-```
-
-Envie ela para o GitHub:
-
-```bash
 git push origin seu-nome
 ```
 
-> A partir de agora, sempre que for trabalhar, entre direto na sua branch:
-> ```bash
-> git checkout seu-nome
-> ```
+## Salvar alterações
 
----
-
-## 💾 3. Salvando seu Trabalho (commit e push)
-
-Depois de fazer alguma alteração no código, siga esses passos:
-
-**1. Veja o que foi alterado:**
-```bash
-git status
-```
-
-**2. Adicione os arquivos alterados:**
 ```bash
 git add .
-```
-
-> O `.` adiciona tudo. Se quiser adicionar só um arquivo específico: `git add nome-do-arquivo`
-
-**3. Faça o commit com uma mensagem descritiva:**
-```bash
-git commit -m "feat: descrição clara do que você fez"
-```
-
-> Exemplos de boas mensagens: `"feat: cria tela de login"`, `"fix: corrige erro na API"`, `"chore: atualiza dependências"`
-
-**4. Envie para o GitHub:**
-```bash
+git commit -m "feat: descrição clara"
 git push origin seu-nome
 ```
 
----
-
-## 🔀 4. Atualizando sua Branch com a Main (pull)
-
-Antes de começar a trabalhar, sempre atualize sua branch com o que tem na `main` para não ficar desatualizado:
+## Atualizar sua branch com a main
 
 ```bash
 git checkout main
@@ -125,139 +590,35 @@ git checkout seu-nome
 git merge main
 ```
 
-Se aparecerem **conflitos**, o Git vai indicar quais arquivos precisam de atenção. Resolva os conflitos no VS Code (ele mostra as diferenças lado a lado), salve e depois:
+## Fazer merge na main
 
-```bash
-git add .
-git commit -m "merge: resolve conflitos com a main"
-git push origin seu-nome
-```
-
----
-
-## ✅ 5. Fazendo Merge na Main (via terminal)
-
-Quando sua parte estiver pronta para ir para a `main`:
-
-**1. Certifique-se de que sua branch está atualizada e sem pendências:**
-```bash
-git status
-git push origin seu-nome
-```
-
-**2. Vá para a `main` e atualize ela:**
 ```bash
 git checkout main
 git pull origin main
-```
-
-**3. Faça o merge da sua branch na `main`:**
-```bash
-git merge seu-nome
-```
-
-**4. Se não houver conflitos, envie a `main` atualizada para o GitHub:**
-```bash
+git merge sua-branch
 git push origin main
 ```
 
-**5. Volte para a sua branch e continue trabalhando:**
-```bash
-git checkout seu-nome
-```
+---
 
-> Se aparecerem **conflitos** no merge, o Git vai indicar os arquivos. Resolva no VS Code, salve e depois:
-> ```bash
-> git add .
-> git commit -m "merge: resolve conflitos"
-> git push origin main
-> git checkout seu-nome
-> ```
+# 📌 Status atual do projeto
+
+Atualmente o sistema já possui:
+
+* CRUD de tutores
+* CRUD de pets
+* CRUD de prontuários
+* dashboard real
+* histórico clínico real
+* integração completa front + back + banco
 
 ---
 
-## 🎨 Front-end (React + Vite)
+# 🚀 Próximos passos do projeto
 
-Para rodar a interface visual, você precisa ter o **Node.js** instalado.
+* integração da IA para geração automática de prontuários
+* exportação de PDF
+* autenticação de usuários
+* deploy do sistema
 
-### Como rodar:
 
-1. Entre na pasta:
-   ```bash
-   cd frontend
-   ```
-
-2. Instale as bibliotecas (só na primeira vez):
-   ```bash
-   npm install
-   ```
-
-3. Inicie o servidor de desenvolvimento:
-   ```bash
-   npm run dev
-   ```
-
-4. Clique no link que aparecerá no terminal (ex: `http://localhost:5173`) para ver o site no navegador.
-
----
-
-## ⚙️ Back-end (Python + FastAPI)
-
-O back-end utiliza um **Ambiente Virtual (venv)**.
-
-> 🤔 **O que é a venv?** É uma "caixinha isolada" para as bibliotecas do projeto. Assim elas não interferem em outros projetos Python do seu computador.
-
-### Como rodar:
-
-1. Entre na pasta:
-   ```bash
-   cd backend
-   ```
-
-2. Crie a venv
-   ```bash
-   python -m venv venv
-   ```
-
-3. Ative o ambiente virtual:
-
-   **No Windows:**
-   ```bash
-   .\venv\Scripts\activate
-   ```
-
-   **No Mac/Linux:**
-   ```bash
-   source venv/bin/activate
-   ```
-
-   Você saberá que deu certo porque aparecerá `(venv)` antes do caminho no terminal.
-
-4. Instale as bibliotecas (se for a primeira vez):
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-5. Rode o servidor:
-   ```bash
-   uvicorn main:app --reload
-   ```
-
----
-
-## 🚀 Tecnologias Utilizadas
-
-- **React + Vite**: Para uma interface rápida e moderna.
-- **FastAPI**: Para o Python conversar com o React de forma veloz.
-- **Node.js & Python**: Os motores que sustentam o projeto.
-
----
-
-## 💡 Dicas para o Grupo
-
-- Cada pessoa tem sua branch permanente com seu nome — não delete, não crie outra.
-- Sempre atualize sua branch com a `main` antes de começar a trabalhar (`git merge main`).
-- Nunca commite direto na `main`.
-- Escreva mensagens de commit descritivas — ajuda muito na hora de entender o histórico.
-- Antes de fazer merge na `main`, garanta que seu código está funcionando.
-- Na primeira vez que for rodar o projeto: execute `npm install` no front e `pip install` no back.

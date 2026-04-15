@@ -56,3 +56,14 @@ class Prontuario(Base):
     diagnostico = Column(Text, nullable=True)
     tratamento = Column(Text, nullable=True)
     criado_em = Column(TIMESTAMP, server_default=func.now())
+
+class Veterinario(Base):
+    __tablename__ = "veterinarios"
+
+    id = Column(Integer, primary_key=True, index=True)
+    nome = Column(String(150), nullable=False)
+    email = Column(String(150), unique=True, nullable=False, index=True)
+    senha_hash = Column(String(255), nullable=False)
+    crmv = Column(String(50), nullable=True)
+    ativo = Column(Boolean, default=True, nullable=False)
+    criado_em = Column(TIMESTAMP, server_default=func.now())

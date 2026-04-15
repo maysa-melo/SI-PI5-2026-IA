@@ -108,3 +108,29 @@ class ProntuarioUpdate(BaseModel):
     resumo: Optional[str] = None
     diagnostico: Optional[str] = None
     tratamento: Optional[str] = None
+
+class VeterinarioCreate(BaseModel):
+    nome: str
+    email: str
+    senha: str
+    crmv: Optional[str] = None
+    ativo: Optional[bool] = True
+
+class VeterinarioResponse(BaseModel):
+    id: int
+    nome: str
+    email: str
+    crmv: Optional[str] = None
+    ativo: bool
+    criado_em: datetime
+
+class Config:
+    from_attributes = True
+
+class LoginRequest(BaseModel):
+    email: str
+    senha: str
+
+class LoginResponse(BaseModel):
+    mensagem: str
+    veterinario: VeterinarioResponse

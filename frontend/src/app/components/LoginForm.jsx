@@ -5,14 +5,17 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Logo } from './Logo';
+import api from '../utils/api';
 
 export function LoginForm() {
   const navigate = useNavigate();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({ email: false, password: false });
   const [touched, setTouched] = useState({ email: false, password: false });
   const [isLoading, setIsLoading] = useState(false);
+  const [serverError, setServerError] = useState('');
 
   const validateEmail = (value) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -22,60 +25,96 @@ export function LoginForm() {
   const handleEmailChange = (e) => {
     const value = e.target.value;
     setEmail(value);
+    setServerError('');
+
     if (touched.email) {
-      setErrors({ ...errors, email: !validateEmail(value) && value.length > 0 });
+      setErrors((prev) => ({
+        ...prev,
+        email: !validateEmail(value) && value.length > 0
+      }));
     }
   };
 
   const handlePasswordChange = (e) => {
     const value = e.target.value;
     setPassword(value);
+    setServerError('');
+
     if (touched.password) {
-      setErrors({ ...errors, password: value.length === 0 });
+      setErrors((prev) => ({
+        ...prev,
+        password: value.length === 0
+      }));
     }
   };
 
   const handleEmailBlur = () => {
-    setTouched({ ...touched, email: true });
-    setErrors({ ...errors, email: !validateEmail(email) && email.length > 0 });
+    setTouched((prev) => ({ ...prev, email: true }));
+    setErrors((prev) => ({
+      ...prev,
+      email: !validateEmail(email) && email.length > 0
+    }));
   };
 
   const handlePasswordBlur = () => {
-    setTouched({ ...touched, password: true });
-    setErrors({ ...errors, password: password.length === 0 });
+    setTouched((prev) => ({ ...prev, password: true }));
+    setErrors((prev) => ({
+      ...prev,
+      password: password.length === 0
+    }));
   };
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    
-    // Mark all fields
+
     setTouched({ email: true, password: true });
-    
-    // Validate all fields
+    setServerError('');
+
     const emailValid = validateEmail(email);
     const passwordValid = password.length > 0;
-    
+
     setErrors({
       email: !emailValid,
       password: !passwordValid
     });
 
-    if (emailValid && passwordValid) {
+    if (!emailValid || !passwordValid) return;
+
+    try {
       setIsLoading(true);
-      // Simulate API call for JWT authentication
-      setTimeout(() => {
-        setIsLoading(false);
-        navigate('/dashboard');
-      }, 1500);
+
+      const response = await api.post('/auth/login', {
+        email: email.trim(),
+        senha: password
+      });
+
+      const { veterinario, mensagem } = response.data;
+
+      localStorage.setItem('veterinario', JSON.stringify(veterinario));
+      localStorage.setItem('isAuthenticated', 'true');
+
+      if (mensagem) {
+        localStorage.setItem('loginMessage', mensagem);
+      }
+
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Erro no login:', error);
+
+      const detail =
+        error?.response?.data?.detail ||
+        'Não foi possível fazer login. Verifique suas credenciais.';
+
+      setServerError(detail);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <div className="w-full max-w-md px-6 sm:px-0">
       <div className="sm:bg-white sm:rounded-2xl sm:shadow-lg sm:p-8">
-        {/* Header */}
         <div className="mb-8">
-          {/* Logo and System Name */}
           <div className="flex items-center justify-center gap-3 mb-6">
             <Logo variant="login" />
             <div>
@@ -87,8 +126,7 @@ export function LoginForm() {
               </p>
             </div>
           </div>
-          
-          {/* Welcome Message */}
+
           <div className="text-center">
             <h2 className="text-2xl font-semibold text-gray-900 mb-2">
               Bem-vindo de volta
@@ -99,9 +137,7 @@ export function LoginForm() {
           </div>
         </div>
 
-        {/* Login Form */}
         <form onSubmit={handleLogin} className="space-y-5">
-          {/* Email Field */}
           <div className="space-y-2">
             <Label htmlFor="email" className="text-sm font-medium text-gray-700">
               E-mail
@@ -115,6 +151,7 @@ export function LoginForm() {
                 value={email}
                 onChange={handleEmailChange}
                 onBlur={handleEmailBlur}
+                autoComplete="email"
                 className={`pl-10 h-11 ${
                   errors.email && touched.email
                     ? 'border-red-500 focus-visible:ring-red-500'
@@ -126,13 +163,12 @@ export function LoginForm() {
               )}
             </div>
             {errors.email && touched.email && (
-              <p className="text-xs text-red-500 flex items-center gap-1">
-                <span>Por favor, insira um endereço de e-mail válido</span>
+              <p className="text-xs text-red-500">
+                Por favor, insira um endereço de e-mail válido
               </p>
             )}
           </div>
 
-          {/* Password Field */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label htmlFor="password" className="text-sm font-medium text-gray-700">
@@ -154,6 +190,7 @@ export function LoginForm() {
                 value={password}
                 onChange={handlePasswordChange}
                 onBlur={handlePasswordBlur}
+                autoComplete="current-password"
                 className={`pl-10 h-11 ${
                   errors.password && touched.password
                     ? 'border-red-500 focus-visible:ring-red-500'
@@ -165,13 +202,18 @@ export function LoginForm() {
               )}
             </div>
             {errors.password && touched.password && (
-              <p className="text-xs text-red-500 flex items-center gap-1">
-                <span>A senha é obrigatória</span>
+              <p className="text-xs text-red-500">
+                A senha é obrigatória
               </p>
             )}
           </div>
 
-          {/* Login Button */}
+          {serverError && (
+            <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2">
+              <p className="text-sm text-red-600">{serverError}</p>
+            </div>
+          )}
+
           <Button
             type="submit"
             disabled={isLoading}
@@ -188,19 +230,17 @@ export function LoginForm() {
           </Button>
         </form>
 
-        {/* Security Notice */}
         <div className="mt-6 pt-6 border-t border-gray-100">
           <div className="flex items-start gap-2 text-xs text-gray-500">
             <ShieldCheck className="w-4 h-4 mt-0.5 text-[#7DD87D] flex-shrink-0" />
             <p>
-              Sua conexão é protegida com criptografia de padrão industrial. 
-              A autenticação utiliza tokens JWT para gerenciamento seguro de sessão.
+              Sua conexão é protegida com criptografia de padrão industrial.
+              O acesso é liberado somente para veterinários cadastrados no banco.
             </p>
           </div>
         </div>
       </div>
 
-      {/* Footer */}
       <p className="text-center text-xs text-gray-500 mt-6">
         © 2026 AnimalTalk. Todos os direitos reservados.
       </p>

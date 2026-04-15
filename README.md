@@ -15,6 +15,8 @@ Este sistema permite gerenciar **tutores**, **pets** e **prontuários clínicos*
 * Dashboard com dados reais
 * Histórico clínico real por paciente
 * Integração completa entre front, back e banco
+* Autenticação de veterinários (login com validação no banco)
+* Controle de acesso por e-mail e senha
 
 ---
 
@@ -166,6 +168,7 @@ O projeto usa estas tabelas principais:
 * `clientes`
 * `pets`
 * `prontuarios`
+* `veterinarios`
 
 ## Se o projeto já criar tabelas automaticamente
 
@@ -237,6 +240,34 @@ CREATE TABLE prontuarios (
         ON DELETE CASCADE
 );
 
+# 🔐 4.1 Autenticação de Veterinários (Login)
+
+O sistema agora possui autenticação real de usuários veterinários.
+
+## Como funciona
+
+* Apenas veterinários cadastrados no banco conseguem acessar o sistema
+* O login valida:
+  - e-mail existente
+  - senha correta (criptografada com bcrypt)
+* A senha **não é salva em texto puro**, apenas em formato hash
+
+---
+
+## 📊 Tabela veterinarios
+
+Se não existir, crie a tabela:
+
+CREATE TABLE veterinarios (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(150) NOT NULL,
+    email VARCHAR(150) UNIQUE NOT NULL,
+    senha_hash VARCHAR(255) NOT NULL,
+    crmv VARCHAR(50),
+    ativo BOOLEAN DEFAULT TRUE,
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 ## Para conferir se as tabelas existem:
 
 No pgAdmin, vá em:
@@ -250,8 +281,90 @@ Você deve ver:
 * `clientes`
 * `pets`
 * `prontuarios`
+* `veterinarios`
 
 ---
+
+## 👤 Cadastro de veterinário
+
+Você pode cadastrar de duas formas:
+
+✔ Opção 1 — via API (recomendado)
+
+* No Swagger (/docs), use:
+
+POST /veterinarios
+
+Exemplo:
+
+{
+  "nome": "Isabelle Silveira Alves",
+  "email": "isabelle@gmail.com",
+  "senha": "12345",
+  "crmv": "CRMV-12345",
+  "ativo": true
+}
+✔ Opção 2 — direto no banco
+
+## ⚠️ IMPORTANTE: a senha deve estar em HASH (bcrypt)
+
+Para gerar um hash:
+
+python -c "import bcrypt; print(bcrypt.hashpw('12345'.encode('utf-8'), bcrypt.gensalt()).decode('utf-8'))"
+
+Depois inserir:
+
+INSERT INTO veterinarios (
+    nome,
+    email,
+    senha_hash,
+    crmv,
+    ativo
+) VALUES (
+    'Isabelle Silveira Alves',
+    'isabelle@gmail.com',
+    'HASH_GERADO_AQUI',
+    'CRMV-12345',
+    TRUE
+);
+
+## 🔑 Login
+
+Endpoint:
+
+POST /auth/login
+
+Exemplo:
+
+{
+  "email": "isabelle@gmail.com",
+  "senha": "12345"
+}
+
+## ✅ Resultado esperado
+
+* Se estiver correto:
+
+{
+  "mensagem": "Login realizado com sucesso",
+  "veterinario": {
+    "id": 1,
+    "nome": "Isabelle Silveira Alves",
+    "email": "isabelle@gmail.com",
+    ...
+  }
+}
+
+* Se estiver errado:
+
+{
+  "detail": "E-mail ou senha inválidos"
+}
+
+## 🔒 Segurança
+Senhas protegidas com bcrypt
+Validação feita no backend
+Apenas usuários cadastrados podem acessar o sistema
 
 # 🐍 5. Rodar o backend
 
@@ -356,6 +469,8 @@ Verifique se existem endpoints como:
 * `/clientes`
 * `/pets`
 * `/prontuarios`
+* `/veterinarios`
+* `/auth/login`
 
 Se esses endpoints aparecerem, o backend está no ar.
 
@@ -480,6 +595,17 @@ Conferir se o dashboard mostra corretamente:
 * tutores cadastrados
 * últimos atendimentos reais
 
+## 9.6 Testar login
+
+1. Acessar a tela de login
+2. Inserir e-mail e senha cadastrados
+3. Confirmar acesso ao dashboard
+
+### Teste inválido:
+
+1. Inserir senha errada
+2. Confirmar mensagem de erro
+
 ---
 
 # 🔍 Consultas úteis no banco
@@ -531,6 +657,16 @@ Verifique:
 
 ---
 
+## Erro de login (401 Unauthorized)
+
+Verifique:
+
+* se o e-mail está correto
+* se o veterinário existe no banco
+* se a senha foi salva com hash bcrypt
+* se o campo `ativo` está como TRUE
+
+---
 ## Frontend abre mas não carrega dados
 
 Verifique:

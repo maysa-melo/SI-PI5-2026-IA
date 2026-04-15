@@ -10,6 +10,62 @@ import {
   SelectValue
 } from './ui/select';
 
+/* =========================
+   Máscaras e formatadores
+========================= */
+const onlyNumbers = (value = '') => value.replace(/\D/g, '');
+
+const maskCPF = (value = '') => {
+  const numbers = onlyNumbers(value).slice(0, 11);
+  return numbers
+    .replace(/^(\d{3})(\d)/, '$1.$2')
+    .replace(/^(\d{3})\.(\d{3})(\d)/, '$1.$2.$3')
+    .replace(/\.(\d{3})(\d)/, '.$1-$2');
+};
+
+const maskRG = (value = '') => {
+  const clean = value.replace(/[^0-9xX]/g, '').slice(0, 9);
+
+  if (clean.length <= 2) return clean;
+  if (clean.length <= 5) return clean.replace(/^(\d{2})(\d+)/, '$1.$2');
+  if (clean.length <= 8) return clean.replace(/^(\d{2})(\d{3})(\d+)/, '$1.$2.$3');
+
+  return clean.replace(/^(\d{2})(\d{3})(\d{3})([0-9xX])$/, '$1.$2.$3-$4');
+};
+
+const maskPhone = (value = '') => {
+  const numbers = onlyNumbers(value).slice(0, 11);
+
+  if (numbers.length <= 10) {
+    return numbers
+      .replace(/^(\d{2})(\d)/g, '($1) $2')
+      .replace(/(\d{4})(\d)/, '$1-$2');
+  }
+
+  return numbers
+    .replace(/^(\d{2})(\d)/g, '($1) $2')
+    .replace(/(\d{5})(\d)/, '$1-$2');
+};
+
+const normalizeWeight = (value = '') => {
+  let clean = value.replace(/[^\d,]/g, '');
+
+  const firstCommaIndex = clean.indexOf(',');
+  if (firstCommaIndex !== -1) {
+    clean =
+      clean.slice(0, firstCommaIndex + 1) +
+      clean.slice(firstCommaIndex + 1).replace(/,/g, '');
+  }
+
+  const [integer = '', decimal = ''] = clean.split(',');
+  const limitedInteger = integer.slice(0, 3);
+  const limitedDecimal = decimal.slice(0, 2);
+
+  return limitedDecimal !== ''
+    ? `${limitedInteger},${limitedDecimal}`
+    : limitedInteger;
+};
+
 export function PetFields({ formData, onChange, disabled = false }) {
   return (
     <div className="space-y-3">
@@ -131,11 +187,11 @@ export function PetFields({ formData, onChange, disabled = false }) {
           </Label>
           <Input
             id="petPeso"
-            type="number"
-            step="0.01"
+            type="text"
+            inputMode="decimal"
             value={formData.petPeso}
-            onChange={(e) => onChange({ ...formData, petPeso: e.target.value })}
-            placeholder="Ex: 12.50"
+            onChange={(e) => onChange({ ...formData, petPeso: normalizeWeight(e.target.value) })}
+            placeholder="Ex: 12,50"
             disabled={disabled}
             className="h-10 text-sm"
           />
@@ -392,10 +448,12 @@ export function OwnerFields({ formData, onChange, disabled = false, headerExtra 
           <Input
             id="ownerCPF"
             value={formData.ownerCPF}
-            onChange={(e) => onChange({ ...formData, ownerCPF: e.target.value })}
+            onChange={(e) => onChange({ ...formData, ownerCPF: maskCPF(e.target.value) })}
             placeholder="000.000.000-00"
             required
             disabled={disabled}
+            inputMode="numeric"
+            maxLength={14}
             className="h-10 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
           />
         </div>
@@ -407,9 +465,11 @@ export function OwnerFields({ formData, onChange, disabled = false, headerExtra 
           <Input
             id="ownerRG"
             value={formData.ownerRG}
-            onChange={(e) => onChange({ ...formData, ownerRG: e.target.value })}
+            onChange={(e) => onChange({ ...formData, ownerRG: maskRG(e.target.value) })}
             placeholder="00.000.000-0"
             disabled={disabled}
+            inputMode="numeric"
+            maxLength={12}
             className="h-10 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
           />
         </div>
@@ -505,9 +565,11 @@ export function OwnerFields({ formData, onChange, disabled = false, headerExtra 
           <Input
             id="ownerPhone"
             value={formData.ownerPhone}
-            onChange={(e) => onChange({ ...formData, ownerPhone: e.target.value })}
+            onChange={(e) => onChange({ ...formData, ownerPhone: maskPhone(e.target.value) })}
             placeholder="(00) 00000-0000"
             disabled={disabled}
+            inputMode="numeric"
+            maxLength={15}
             className="h-10 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
           />
         </div>

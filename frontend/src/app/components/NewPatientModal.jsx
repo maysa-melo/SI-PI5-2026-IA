@@ -1,6 +1,6 @@
 import api from '../utils/api';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Plus, PawPrint, User, Info } from 'lucide-react';
 import { Button } from './ui/button';
 import {
@@ -14,11 +14,24 @@ import { Alert, AlertDescription } from './ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { PetFields, ObservationFields, OwnerFields } from './PatientFormFields';
 
+/* =========================
+   Helpers para envio API
+========================= */
+const onlyNumbers = (value = '') => value.replace(/\D/g, '');
+
+const formatWeightToApi = (value = '') => {
+  if (!value) return null;
+  const normalized = value.replace(',', '.');
+  const parsed = parseFloat(normalized);
+  return Number.isNaN(parsed) ? null : parsed;
+};
+
 export function NewPatientModal({ isOpen, onClose, onSubmit, existingOwner }) {
-  const [formData, setFormData] = useState({
-    // Dados do Pet (tabela pets)
+  const getInitialFormData = () => ({
+    // Dados do Pet
     petName: '',
     species: '',
+    speciesCustom: '',
     breed: '',
     petVivo: true,
     petPeso: '',
@@ -32,7 +45,9 @@ export function NewPatientModal({ isOpen, onClose, onSubmit, existingOwner }) {
     petChip: '',
     petMatriculaConvenio: '',
     petFotoUrl: '',
-    // Dados do Tutor (tabela clientes)
+    petFotoFile: null,
+
+    // Dados do Tutor
     ownerName: existingOwner?.ownerName || '',
     ownerSexo: existingOwner?.ownerSexo || '',
     ownerNacionalidade: existingOwner?.ownerNacionalidade || '',
@@ -50,76 +65,100 @@ export function NewPatientModal({ isOpen, onClose, onSubmit, existingOwner }) {
     ownerMarcacaoNeutra: existingOwner?.ownerMarcacaoNeutra || '',
     ownerMarcacaoPositiva: existingOwner?.ownerMarcacaoPositiva || '',
     ownerFotoUrl: existingOwner?.ownerFotoUrl || '',
+    ownerFotoFile: null,
+
     // Observações
     allergies: '',
     importantNotes: ''
   });
 
+  const [formData, setFormData] = useState(getInitialFormData());
+
+  useEffect(() => {
+    if (isOpen) {
+      setFormData(getInitialFormData());
+    }
+  }, [isOpen, existingOwner]);
+
+  const resetForm = () => {
+    setFormData(getInitialFormData());
+  };
+
+  const handleClose = () => {
+    resetForm();
+    onClose();
+  };
+
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  try {
-    let clienteId = existingOwner?.id;
+    try {
+      let clienteId = existingOwner?.id;
 
-    // 🧍 Se NÃO tiver tutor, cria
-    if (!existingOwner) {
-      const clienteResponse = await api.post('/clientes', {
-        nome: formData.ownerName,
-        sexo: formData.ownerSexo || null,
-        nacionalidade: formData.ownerNacionalidade || null,
-        estado_civil: formData.ownerEstadoCivil || null,
-        cpf: formData.ownerCPF || null,
-        rg: formData.ownerRG || null,
-        data_nascimento: formData.ownerDataNascimento || null,
-        profissao: formData.ownerProfissao || null,
-        como_conheceu: formData.ownerComoConheceu || null,
-        matricula_convenio: formData.ownerMatriculaConvenio || null,
-        email: formData.ownerEmail || null,
-        facebook: formData.ownerFacebook || null,
-        instagram: formData.ownerInstagram || null,
-        marcacao_neutra: formData.ownerMarcacaoNeutra || null,
-        marcacao_positiva: formData.ownerMarcacaoPositiva || null,
-        foto_url: formData.ownerFotoUrl || null,
+      // Se não tiver tutor, cria
+      if (!existingOwner) {
+        const clienteResponse = await api.post('/clientes', {
+          nome: formData.ownerName,
+          sexo: formData.ownerSexo || null,
+          nacionalidade: formData.ownerNacionalidade || null,
+          estado_civil: formData.ownerEstadoCivil || null,
+          cpf: onlyNumbers(formData.ownerCPF) || null,
+          rg: onlyNumbers(formData.ownerRG) || null,
+          data_nascimento: formData.ownerDataNascimento || null,
+          profissao: formData.ownerProfissao || null,
+          como_conheceu: formData.ownerComoConheceu || null,
+          matricula_convenio: formData.ownerMatriculaConvenio || null,
+          email: formData.ownerEmail || null,
+          telefone: onlyNumbers(formData.ownerPhone) || null,
+          facebook: formData.ownerFacebook || null,
+          instagram: formData.ownerInstagram || null,
+          marcacao_neutra: formData.ownerMarcacaoNeutra || null,
+          marcacao_positiva: formData.ownerMarcacaoPositiva || null,
+          foto_url: formData.ownerFotoUrl || null,
+        });
+
+        clienteId = clienteResponse.data.id;
+      }
+
+      // Criar pet
+      await api.post('/pets', {
+        cliente_id: clienteId,
+        nome: formData.petName,
+        especie: formData.species === 'Outro'
+          ? formData.speciesCustom
+          : formData.species,
+        raca: formData.breed || null,
+        vivo: formData.petVivo,
+        peso_kg: formatWeightToApi(formData.petPeso),
+        data_nascimento: formData.birthDate || null,
+        sexo: formData.petSexo || null,
+        castrado: formData.petCastrado === 'true',
+        porte: formData.petPorte || null,
+        cor: formData.petCor || null,
+        pelagem: formData.petPelagem || null,
+        pedigree: formData.petPedigree || null,
+        chip: formData.petChip || null,
+        matricula_convenio: formData.petMatriculaConvenio || null,
+        foto_url: formData.petFotoUrl || null,
       });
 
-      clienteId = clienteResponse.data.id;
+      alert('Paciente cadastrado com sucesso!');
+      resetForm();
+      onSubmit();
+      onClose();
+    } catch (error) {
+      console.error(error);
+      alert('Erro ao cadastrar paciente');
     }
-
-    // 🐶 Criar pet
-    await api.post('/pets', {
-      cliente_id: clienteId,
-      nome: formData.petName,
-      especie: formData.species === 'Outro'
-        ? formData.speciesCustom
-        : formData.species,
-      raca: formData.breed || null,
-      vivo: formData.petVivo,
-      peso_kg: formData.petPeso ? parseFloat(formData.petPeso) : null,
-      data_nascimento: formData.birthDate || null,
-      sexo: formData.petSexo || null,
-      castrado: formData.petCastrado === 'true',
-      porte: formData.petPorte || null,
-      cor: formData.petCor || null,
-      pelagem: formData.petPelagem || null,
-      pedigree: formData.petPedigree || null,
-      chip: formData.petChip || null,
-      matricula_convenio: formData.petMatriculaConvenio || null,
-      foto_url: formData.petFotoUrl || null,
-    });
-
-    alert('Paciente cadastrado com sucesso!');
-
-    onSubmit(); // atualizar lista
-    onClose();  // fechar modal
-
-  } catch (error) {
-    console.error(error);
-    alert('Erro ao cadastrar paciente');
-  }
-};
+  };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) handleClose();
+      }}
+    >
       <DialogContent className="sm:max-w-4xl max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
@@ -134,7 +173,6 @@ export function NewPatientModal({ isOpen, onClose, onSubmit, existingOwner }) {
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
-          {/* Alerta quando for tutor existente */}
           {existingOwner && (
             <Alert className="bg-[#7DD87D]/12 border-[#7DD87D] border mb-4">
               <Info className="h-4 w-4 text-[#7DD87D]" />
@@ -145,13 +183,11 @@ export function NewPatientModal({ isOpen, onClose, onSubmit, existingOwner }) {
           )}
 
           {existingOwner ? (
-            /* Tutor existente: mostra apenas campos do pet */
             <div className="flex-1 overflow-y-auto pr-2 space-y-4 mt-4">
               <PetFields formData={formData} onChange={setFormData} />
               <ObservationFields formData={formData} onChange={setFormData} />
             </div>
           ) : (
-            /* Novo cadastro completo: tabs Tutor + Pet */
             <Tabs defaultValue="owner" className="flex-1 flex flex-col overflow-hidden">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="owner" className="gap-2">
@@ -179,12 +215,11 @@ export function NewPatientModal({ isOpen, onClose, onSubmit, existingOwner }) {
             </Tabs>
           )}
 
-          {/* Action Buttons */}
           <div className="flex gap-3 justify-end pt-3 border-t">
             <Button
               type="button"
               variant="outline"
-              onClick={onClose}
+              onClick={handleClose}
               className="h-10 px-5 text-sm"
             >
               Cancelar

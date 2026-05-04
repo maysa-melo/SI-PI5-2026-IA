@@ -1,8 +1,12 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 import bcrypt
+import os
+import shutil
+import traceback
+from tempfile import NamedTemporaryFile
 
 from database import engine, SessionLocal
 from models import Cliente, Pet, Prontuario, Veterinario
@@ -13,6 +17,7 @@ from schemas import (
     VeterinarioCreate, VeterinarioResponse,
     LoginRequest, LoginResponse
 )
+from ia_service import transcrever_audio, estruturar_prontuario
 
 app = FastAPI()
 
@@ -239,3 +244,54 @@ def deletar_prontuario(prontuario_id: int, db: Session = Depends(get_db)):
     db.delete(prontuario)
     db.commit()
     return {"mensagem": "Prontuário deletado com sucesso"}
+
+@app.post("/pets/{pet_id}/prontuarios/audio", response_model=ProntuarioResponse)
+async def criar_prontuario_por_audio(
+    pet_id: int,
+    veterinario: str | None = Form(None),
+    tipo: str | None = Form(None),
+    audio: UploadFile = File(...),
+    db: Session = Depends(get_db),
+):
+    pet = db.query(Pet).filter(Pet.id == pet_id).first()
+    if not pet:
+        raise HTTPException(status_code=404, detail="Pet não encontrado")
+
+    temp_audio_path = ""
+    try:
+        _, ext = os.path.splitext(audio.filename or "")
+        suffix = ext if ext else ".webm"
+
+        with NamedTemporaryFile(delete=False, suffix=suffix) as temp_file:
+            shutil.copyfileobj(audio.file, temp_file)
+            temp_audio_path = temp_file.name
+
+        texto_bruto = transcrever_audio(temp_audio_path)
+        if not texto_bruto:
+            raise HTTPException(status_code=400, detail="Transcrição vazia")
+
+        dados_prontuario = estruturar_prontuario(texto_bruto)
+
+        novo_prontuario = Prontuario(
+            pet_id=pet_id,
+            tipo=tipo,
+            veterinario=veterinario,
+            resumo=dados_prontuario.get("resumo"),
+            diagnostico=dados_prontuario.get("diagnostico"),
+            tratamento=dados_prontuario.get("tratamento"),
+        )
+
+        db.add(novo_prontuario)
+        db.commit()
+        db.refresh(novo_prontuario)
+        return novo_prontuario
+    except HTTPException:
+        raise
+    except Exception as exc:
+        db.rollback()
+        print("Erro ao processar audio:")
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=f"Erro ao processar audio: {exc}")
+    finally:
+        if temp_audio_path and os.path.exists(temp_audio_path):
+            os.remove(temp_audio_path)

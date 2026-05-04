@@ -4,7 +4,6 @@ import { DashboardLayout } from "./components/DashboardLayout";
 import { Dashboard } from "./pages/Dashboard";
 import { Patients } from "./pages/Patients";
 import { PatientProfile } from "./pages/PatientProfile";
-import { Consultation } from "./pages/Consultation";
 import { MedicalRecord } from "./pages/MedicalRecord";
 import { PatientHistory } from "./pages/PatientHistory";
 import { NewRecord } from "./pages/NewRecord";
@@ -26,10 +25,6 @@ export const router = createBrowserRouter([
   {
     path: "/novo-prontuario",
     Component: NewRecord
-  },
-  {
-    path: "/consulta",
-    Component: Consultation
   },
   {
     path: "/prontuario",

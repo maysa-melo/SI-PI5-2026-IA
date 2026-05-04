@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import { Search, Plus, FileText, Clock, Users, PawPrint, ClipboardList, User } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -18,6 +18,7 @@ import api from '../utils/api';
 
 export function Dashboard() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isNewRecordOpen, setIsNewRecordOpen] = useState(false);
@@ -28,6 +29,8 @@ export function Dashboard() {
   const [isNewPatientModalOpen, setIsNewPatientModalOpen] = useState(false);
   const [isGeneratingModalOpen, setIsGeneratingModalOpen] = useState(false);
   const [isRecordResultModalOpen, setIsRecordResultModalOpen] = useState(false);
+  const [resultContent, setResultContent] = useState('');
+  const [setProntuarioData] = useState(null);
 
   const [pets, setPets] = useState([]);
   const [clientes, setClientes] = useState([]);
@@ -45,6 +48,14 @@ export function Dashboard() {
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (location.state?.startConsultation && location.state?.patient) {
+      setSelectedPatient(location.state.patient);
+      setIsConsultationOpen(true);
+      navigate('/dashboard', { replace: true, state: {} });
+    }
+  }, [location.state, navigate]);
 
   const carregarDados = async () => {
     try {
@@ -74,10 +85,6 @@ export function Dashboard() {
     setIsNewRecordOpen(true);
     setPatientSearchQuery('');
     setSelectedPatient(null);
-  };
-
-  const handlePatientClick = (patient) => {
-    navigate(`/dashboard/pacientes/${patient.id}`);
   };
 
   const handleSelectPatient = (patient) => {
@@ -477,25 +484,49 @@ export function Dashboard() {
       </Dialog>
 
       <ConsultationModal
-        key={isConsultationOpen ? 'open' : 'closed'}
+        key={isConsultationOpen ? 'consultation-open' : 'consultation-closed'}
         isOpen={isConsultationOpen}
         onClose={() => setIsConsultationOpen(false)}
         patient={selectedPatient}
-        onFinalize={async (consultationData) => {
+        onFinalize={async ({ audioBlob }) => {
           try {
-            await api.post('/prontuarios', consultationData);
-            await carregarDados();
+            if (!selectedPatient?.id) {
+              throw new Error('Paciente sem identificacao');
+            }
 
             setIsConsultationOpen(false);
             setIsGeneratingModalOpen(true);
 
-            setTimeout(() => {
-              setIsGeneratingModalOpen(false);
-              setIsRecordResultModalOpen(true);
-            }, 3000);
+            const formData = new FormData();
+            formData.append('audio', audioBlob, `consulta-${Date.now()}.webm`);
+            formData.append('tipo', 'Consulta');
+
+            const response = await api.post(`/pets/${selectedPatient.id}/prontuarios/audio`, formData, {
+              headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            await carregarDados();
+
+            const prontuario = response.data;
+            const textoFormatado = [
+              'RESUMO',
+              prontuario.resumo || '',
+              '',
+              'DIAGNOSTICO',
+              prontuario.diagnostico || '',
+              '',
+              'TRATAMENTO',
+              prontuario.tratamento || ''
+            ].join('\n');
+
+            setProntuarioData(prontuario);
+            setResultContent(textoFormatado.trim());
+            setIsGeneratingModalOpen(false);
+            setIsRecordResultModalOpen(true);
           } catch (error) {
             console.error('Erro ao salvar prontuário:', error);
-            alert('Erro ao salvar prontuário');
+            const msgErro = error.response?.data?.detail || 'Erro desconhecido';
+            alert(`Erro ao salvar prontuário: ${msgErro}`);
+            setIsGeneratingModalOpen(false);
           }
         }}
       />
@@ -512,12 +543,13 @@ export function Dashboard() {
       <GeneratingModal isOpen={isGeneratingModalOpen} />
 
       <RecordResultModal
-        key={isRecordResultModalOpen ? 'open' : 'closed'}
+        key={isRecordResultModalOpen ? 'record-open' : 'record-closed'}
         isOpen={isRecordResultModalOpen}
         onClose={() => {
           setIsRecordResultModalOpen(false);
           setSelectedPatient(null);
         }}
+        initialContent={resultContent}
         onSave={(content) => {
           console.log('Saving record:', content);
           alert('Prontuário salvo com sucesso!');

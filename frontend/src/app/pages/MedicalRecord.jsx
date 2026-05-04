@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useLocation } from 'react-router';
 import { ArrowLeft, Edit2, Check, X, Save, Trash2, Sparkles } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Textarea } from '../components/ui/textarea';
@@ -7,33 +7,36 @@ import { Textarea } from '../components/ui/textarea';
 
 export function MedicalRecord() {
   const navigate = useNavigate();
+  const location = useLocation();
 
-  // Mock patient data
-  const patient = {
-    name: 'Rex',
+  const patient = location.state?.patient || {
+    petName: 'Rex',
     breed: 'Golden Retriever',
-    owner: 'Maria Silva',
-    date: '18/03/2026',
-    time: '14:30'
+    ownerName: 'Maria Silva'
   };
+
+  const prontuario = location.state?.prontuario || null;
+  const criadoEm = prontuario?.criado_em ? new Date(prontuario.criado_em) : new Date();
+  const date = criadoEm.toLocaleDateString('pt-BR');
+  const time = criadoEm.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
   // Initial AI-generated content
   const [sections, setSections] = useState([
     {
-      title: 'Anamnese',
-      content: 'Paciente apresenta histórico de 3 dias de perda de apetite e letargia. Tutor relata que o animal vomitou duas vezes nas últimas 24 horas. Não houve mudança na dieta recentemente. Animal mantém-se hidratado e sem febre aparente. Vacinação em dia, última dose aplicada há 4 meses.',
+      title: 'Resumo',
+      content: prontuario?.resumo || 'Resumo ainda nao disponivel.',
       isEditing: false
     },
     {
-      title: 'Exame Físico',
-      content: 'Temperatura: 38.5°C (normal). Frequência cardíaca: 95 bpm. Frequência respiratória: 24 rpm. Mucosas rosadas e úmidas. Tempo de preenchimento capilar < 2 segundos. Ausculta cardíaca e pulmonar sem alterações. Abdômen levemente sensível à palpação na região epigástrica. Linfonodos normais. Pelagem e pele sem alterações.',
+      title: 'Diagnostico',
+      content: prontuario?.diagnostico || 'Diagnostico ainda nao disponivel.',
       isEditing: false
     },
     {
-      title: 'Conduta',
-      content: 'Prescrito ranitidina 2mg/kg a cada 12 horas por 5 dias. Metoclopramida 0.5mg/kg a cada 8 horas por 3 dias. Dieta leve (frango cozido com arroz) em pequenas porções durante 3 dias. Solicitado exame de sangue completo e ultrassonografia abdominal. Retorno agendado em 5 dias para reavaliação. Orientado tutor sobre sinais de alerta: vômito persistente, diarreia com sangue ou piora do estado geral.',
+      title: 'Tratamento',
+      content: prontuario?.tratamento || 'Tratamento ainda nao disponivel.',
       isEditing: false
-    },
+    }
   ]);
 
   const [editedContent, setEditedContent] = useState({});
@@ -101,12 +104,12 @@ export function MedicalRecord() {
           <div className="bg-gradient-to-r from-[#1c5ca6] to-[#38A169] rounded-lg p-4 text-white">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
-                <h2 className="text-xl font-bold">{patient.name}</h2>
-                <p className="text-sm opacity-90">{patient.breed} • Tutor: {patient.owner}</p>
+                <h2 className="text-xl font-bold">{patient.petName}</h2>
+                  <p className="text-sm opacity-90">{patient.breed} • Tutor: {patient.ownerName}</p>
               </div>
               <div className="text-right text-sm">
-                <p className="font-medium">{patient.date}</p>
-                <p className="opacity-90">{patient.time}</p>
+                <p className="font-medium">{date}</p>
+                <p className="opacity-90">{time}</p>
               </div>
             </div>
           </div>

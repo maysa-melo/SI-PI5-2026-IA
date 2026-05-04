@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Pause, Square, Play } from 'lucide-react';
 import { Button } from './ui/button';
 import { AudioWaveform } from './AudioWaveform';
@@ -12,9 +12,18 @@ import {
 import { formatTime } from '../utils/time';
 
 export function ConsultationModal({ isOpen, onClose, patient, onFinalize }) {
-  const [isRecording, setIsRecording] = useState(true);
+  const [isRecording, setIsRecording] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [seconds, setSeconds] = useState(0);
+  const [audioLevel, setAudioLevel] = useState(0);
+  const [isMicReady, setIsMicReady] = useState(false);
+  const [isRequestingMic, setIsRequestingMic] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const mediaRecorderRef = useRef(null);
+  const streamRef = useRef(null);
+  const audioChunksRef = useRef([]);
+  const audioContextRef = useRef(null);
+  const animationRef = useRef(null);
 
   useEffect(() => {
     let interval = null;
@@ -32,29 +41,134 @@ export function ConsultationModal({ isOpen, onClose, patient, onFinalize }) {
 
   useEffect(() => {
     if (isOpen) {
-      setIsRecording(true);
+      setIsRecording(false);
       setIsPaused(false);
       setSeconds(0);
+      setAudioLevel(0);
+      setIsMicReady(false);
+      setIsRequestingMic(false);
+      setErrorMessage('');
+      audioChunksRef.current = [];
     }
+
+    return () => {
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        mediaRecorderRef.current.stop();
+      }
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+      }
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
+      }
+    };
   }, [isOpen]);
 
-  const handlePauseResume = () => {
-    setIsPaused(!isPaused);
+  const iniciarGravacao = async () => {
+    if (isRequestingMic || isMicReady) return;
+    setIsRequestingMic(true);
+    setErrorMessage('');
+
+    try {
+      if (!navigator.mediaDevices?.getUserMedia) {
+        throw new Error('Navegador nao suporta microfone');
+      }
+
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data && event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.start();
+
+      const audioContext = new AudioContext();
+      audioContextRef.current = audioContext;
+      const source = audioContext.createMediaStreamSource(stream);
+      const analyser = audioContext.createAnalyser();
+      analyser.fftSize = 1024;
+      source.connect(analyser);
+
+      const dataArray = new Uint8Array(analyser.frequencyBinCount);
+      const updateLevel = () => {
+        analyser.getByteTimeDomainData(dataArray);
+        let sum = 0;
+        for (let i = 0; i < dataArray.length; i += 1) {
+          const value = (dataArray[i] - 128) / 128;
+          sum += value * value;
+        }
+        const rms = Math.sqrt(sum / dataArray.length);
+        setAudioLevel(Math.min(100, Math.round(rms * 200)));
+        animationRef.current = requestAnimationFrame(updateLevel);
+      };
+      updateLevel();
+
+      setIsMicReady(true);
+      setIsRecording(true);
+    } catch (error) {
+      console.error(error);
+      setErrorMessage('Nao foi possivel acessar o microfone.');
+      setIsRecording(false);
+    } finally {
+      setIsRequestingMic(false);
+    }
   };
 
-  const handleFinalize = () => {
+  const handlePauseResume = () => {
+    if (!mediaRecorderRef.current || !isMicReady) return;
+
+    if (isPaused) {
+      mediaRecorderRef.current.resume();
+      setIsPaused(false);
+    } else {
+      mediaRecorderRef.current.pause();
+      setIsPaused(true);
+    }
+  };
+
+  const stopRecording = () => {
+    return new Promise((resolve, reject) => {
+      const recorder = mediaRecorderRef.current;
+      if (!recorder || !isMicReady) {
+        reject(new Error('Gravador nao iniciado'));
+        return;
+      }
+
+      recorder.onstop = () => {
+        const mimeType = recorder.mimeType || 'audio/webm';
+        const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
+        resolve(audioBlob);
+      };
+
+      recorder.stop();
+    });
+  };
+
+  const handleFinalize = async () => {
+    if (!isMicReady) {
+      setErrorMessage('Ative o microfone antes de finalizar.');
+      return;
+    }
+
     setIsRecording(false);
 
-    const consultationData = {
-      pet_id: patient.id,
-      tipo: 'Consulta',
-      veterinario: 'Veterinário não informado',
-      resumo: `Atendimento finalizado com duração de ${formatTime(seconds)}.`,
-      diagnostico: 'Diagnóstico não informado',
-      tratamento: 'Tratamento não informado'
-    };
-
-    onFinalize(consultationData);
+    try {
+      const audioBlob = await stopRecording();
+      onFinalize({ audioBlob, durationSeconds: seconds });
+    } catch (error) {
+      console.error(error);
+      setErrorMessage('Erro ao finalizar a gravacao.');
+    }
   };
 
   const handleClose = () => {
@@ -101,7 +215,7 @@ export function ConsultationModal({ isOpen, onClose, patient, onFinalize }) {
               <div className="inline-flex items-center gap-2 px-3 py-1 bg-white rounded-full mb-2 border border-gray-200">
                 <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
                 <span className="text-xs font-medium text-gray-600">
-                  {isPaused ? 'Pausado' : 'Gravando'}
+                  {!isMicReady ? 'Microfone inativo' : isPaused ? 'Pausado' : 'Gravando'}
                 </span>
               </div>
 
@@ -117,39 +231,54 @@ export function ConsultationModal({ isOpen, onClose, patient, onFinalize }) {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+          {!isMicReady ? (
             <Button
-              onClick={handlePauseResume}
-              variant="outline"
-              className="h-11 border border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-sm font-medium rounded-lg"
+              onClick={iniciarGravacao}
+              className="h-11 bg-[#1c5ca6] hover:bg-[#184d8b] text-white text-sm font-medium rounded-lg"
+              disabled={isRequestingMic}
             >
-              {isPaused ? (
-                <>
-                  <Play className="w-4 h-4 mr-2" />
-                  Retomar
-                </>
-              ) : (
-                <>
-                  <Pause className="w-4 h-4 mr-2" />
-                  Pausar
-                </>
-              )}
+              {isRequestingMic ? 'Solicitando microfone...' : 'Habilitar microfone'}
             </Button>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+              <Button
+                onClick={handlePauseResume}
+                variant="outline"
+                className="h-11 border border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-sm font-medium rounded-lg"
+              >
+                {isPaused ? (
+                  <>
+                    <Play className="w-4 h-4 mr-2" />
+                    Retomar
+                  </>
+                ) : (
+                  <>
+                    <Pause className="w-4 h-4 mr-2" />
+                    Pausar
+                  </>
+                )}
+              </Button>
 
-            <Button
-              onClick={handleFinalize}
-              className="h-11 bg-[#EF6C50] hover:bg-[#E05C40] text-white text-sm font-medium rounded-lg"
-            >
-              <Square className="w-4 h-4 mr-2" />
-              Finalizar
-            </Button>
-          </div>
+              <Button
+                onClick={handleFinalize}
+                className="h-11 bg-[#EF6C50] hover:bg-[#E05C40] text-white text-sm font-medium rounded-lg"
+              >
+                <Square className="w-4 h-4 mr-2" />
+                Finalizar
+              </Button>
+            </div>
+          )}
 
           <div className="text-center text-xs text-gray-400 pb-1">
             <p>
-              Fale naturalmente sobre os sintomas, diagnóstico e tratamento.
-              O prontuário será gerado automaticamente ao finalizar.
+              {isMicReady
+                ? 'Fale naturalmente sobre os sintomas, diagnostico e tratamento. O prontuario sera gerado ao finalizar.'
+                : 'Clique em habilitar microfone para iniciar a gravacao.'}
             </p>
+            <p className="text-xs text-gray-500 mt-2">Nivel do microfone: {audioLevel}%</p>
+            {errorMessage && (
+              <p className="text-xs text-red-600 mt-2">{errorMessage}</p>
+            )}
           </div>
         </div>
       </DialogContent>

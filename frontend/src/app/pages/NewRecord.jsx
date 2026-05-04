@@ -24,7 +24,7 @@ export function NewRecord() {
 
   const handleStartRecording = () => {
     if (selectedPatient) {
-      navigate('/consulta', { state: { patient: selectedPatient } });
+      navigate('/dashboard', { state: { startConsultation: true, patient: selectedPatient } });
     }
   };
 

@@ -27,7 +27,7 @@ export function GeneratingModal({ isOpen }) {
             Gerando Prontuário...
           </h3>
           <p className="text-base text-gray-500 text-center max-w-md">
-            A inteligência artificial está organizando e estruturando todasções da consulta
+            A inteligência artificial está organizando e estruturando todas as ações da consulta
           </p>
           
           <div className="mt-8 flex flex-col gap-2 w-full max-w-md">

@@ -112,7 +112,10 @@ def transcrever_audio(caminho_arquivo: str) -> str:
 
 
 def montar_prompt_prontuario(texto_transcrito: str) -> str:
-    return PROMPT_VETERINARIO.format(texto_transcrito=texto_transcrito)
+    return PROMPT_VETERINARIO.replace(
+        "{texto_transcrito}",
+        texto_transcrito
+    )
 
 
 def validar_json_prontuario(dados: dict, texto_transcrito: str) -> dict:

@@ -30,7 +30,7 @@ export function Dashboard() {
   const [isGeneratingModalOpen, setIsGeneratingModalOpen] = useState(false);
   const [isRecordResultModalOpen, setIsRecordResultModalOpen] = useState(false);
   const [resultContent, setResultContent] = useState('');
-  const [setProntuarioData] = useState(null);
+  const [, setProntuarioData] = useState(null);
 
   const [pets, setPets] = useState([]);
   const [clientes, setClientes] = useState([]);

@@ -271,6 +271,9 @@ async def criar_prontuario_por_audio(
             raise HTTPException(status_code=400, detail="Transcrição vazia")
 
         dados_prontuario = estruturar_prontuario(texto_bruto)
+        
+        print("===== DADOS DO PRONTUÁRIO GERADOS PELA IA =====")
+        print(dados_prontuario)
 
         novo_prontuario = Prontuario(
             pet_id=pet_id,

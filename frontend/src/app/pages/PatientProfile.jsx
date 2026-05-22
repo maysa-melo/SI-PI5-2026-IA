@@ -12,6 +12,7 @@ import { Textarea } from '../components/ui/textarea';
 import { PetFields, ObservationFields, OwnerFields } from '../components/PatientFormFields';
 import { NewPatientModal } from '../components/NewPatientModal';
 import api from '../utils/api';
+import { jsPDF } from 'jspdf';
 
 const sections = [
   { key: 'last-record', label: 'Último Prontuário', icon: ClipboardList },
@@ -251,7 +252,137 @@ export function PatientProfile() {
   };
 
   const handleExportPDF = (record) => {
-    alert(`Exportando prontuário #${record.id} em PDF`);
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 20;
+    
+    // --- ESTILO DO CABEÇALHO (CLÍNICA E DOCUMENTO) ---
+    doc.setFillColor(30, 58, 138); // Azul Marinho Profundo, mais premium
+    doc.rect(0, 0, pageWidth, 45, 'F');
+    
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(22);
+    doc.text("PRONTUÁRIO CLÍNICO VETERINÁRIO", pageWidth / 2, 22, { align: "center" });
+    
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "italic");
+    doc.text("Documento Oficial de Atendimento", pageWidth / 2, 30, { align: "center" });
+
+    // Faixa inferior do cabeçalho
+    doc.setFillColor(219, 234, 254); // Azul bem clarinho
+    doc.rect(0, 45, pageWidth, 8, 'F');
+    doc.setTextColor(30, 58, 138);
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "bold");
+    doc.text(`DOC #${record.id} • EMITIDO EM: ${new Date().toLocaleDateString('pt-BR')}`, pageWidth / 2, 50, { align: "center" });
+
+    let yPosition = 70;
+
+    // --- BLOCO 1: IDENTIFICAÇÃO (Rótulos e Valores padronizados) ---
+    doc.setFontSize(12);
+    doc.setTextColor(40, 40, 40);
+    
+    const col1 = margin;
+    const col2 = pageWidth / 2 + 10;
+    
+    // Tratamento de data/hora
+    const dataObj = record.date ? new Date(record.date) : new Date();
+    const dataStr = dataObj.toLocaleDateString('pt-BR');
+    const horaStr = dataObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    
+    // Função utilitária de renderização em grid
+    const writeGridInfo = (label, value, x, y) => {
+      doc.setFont("helvetica", "bold");
+      doc.text(label, x, y);
+      const labelWidth = doc.getTextWidth(label) + 2;
+      doc.setFont("helvetica", "normal");
+      doc.text(value, x + labelWidth, y);
+    };
+
+    // Linha 1
+    writeGridInfo("Paciente:", pet?.nome || 'Não informado', col1, yPosition);
+    writeGridInfo("Data do Atendimento:", dataStr, col2, yPosition);
+    yPosition += 8;
+
+    // Linha 2
+    writeGridInfo("Espécie/Raça:", `${pet?.especie || ''} / ${pet?.raca || ''}`, col1, yPosition);
+    writeGridInfo("Hora do Atendimento:", horaStr, col2, yPosition);
+    yPosition += 8;
+
+    // Linha 3
+    writeGridInfo("Tutor Responsável:", cliente?.nome || 'Não informado', col1, yPosition);
+    writeGridInfo("Veterinário(a):", record.veterinarian || "Não informado", col2, yPosition);
+    yPosition += 15;
+
+    // Linha separadora elegante
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.5);
+    doc.line(margin, yPosition, pageWidth - margin, yPosition);
+    yPosition += 15;
+
+    // --- FUNÇÃO PARA RENDERIZAR SEÇÕES DE TEXTO ---
+    const addSection = (title, textContent, isHighPriority = false) => {
+      if (!textContent || textContent === "null" || textContent.trim() === "") return;
+      
+      // Quebra de página se estiver perto do fim
+      if (yPosition > pageHeight - 40) {
+        doc.addPage();
+        yPosition = margin + 10;
+      }
+
+      // Título da Seção
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(13);
+      doc.setTextColor(30, 58, 138); // Azul marinho
+      
+      if (isHighPriority) {
+          doc.setFillColor(240, 245, 255);
+          doc.rect(margin - 2, yPosition - 5, 80, 8, 'F');
+      }
+      
+      doc.text(title.toUpperCase(), margin, yPosition);
+      yPosition += 8;
+
+      // Corpo da Seção
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(11);
+      doc.setTextColor(50, 50, 50);
+      
+      // Trata quebras de linha manuais do texto (\n)
+      const rawLines = textContent.split('\n');
+      for (const line of rawLines) {
+        const splitText = doc.splitTextToSize(line, pageWidth - (margin * 2));
+        for (let i = 0; i < splitText.length; i++) {
+          if (yPosition > pageHeight - 20) {
+            doc.addPage();
+            yPosition = margin + 10;
+          }
+          doc.text(splitText[i], margin, yPosition);
+          yPosition += 5.5; // Espaçamento de linha limpo
+        }
+      }
+      
+      yPosition += 10; // Espaço antes da próxima seção
+    };
+
+    // Adicionando o conteúdo estruturado
+    addSection("ANAMNESE E HISTÓRICO", record.summary, true);
+    addSection("DIAGNÓSTICO / SUSPEITA", record.diagnosis, true);
+    addSection("CONDUTA E TRATAMENTO", record.treatment, true);
+
+    // --- RODAPÉ ---
+    doc.setFontSize(9);
+    doc.setTextColor(150, 150, 150);
+    doc.text("Documento gerado automaticamente pelo Sistema Integral de Gestão Veterinária", pageWidth / 2, pageHeight - 15, { align: "center" });
+    
+    // Linha de assinatura
+    doc.setDrawColor(150, 150, 150);
+    doc.line(pageWidth / 2 - 40, pageHeight - 35, pageWidth / 2 + 40, pageHeight - 35);
+    doc.text("Assinatura do(a) Veterinário(a)", pageWidth / 2, pageHeight - 28, { align: "center" });
+
+    doc.save(`Prontuario_${pet?.nome || 'Pet'}_${dataStr.replace(/\//g, '-')}.pdf`);
   };
 
   const handleEditRecord = (record) => {

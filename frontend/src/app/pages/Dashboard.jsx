@@ -497,9 +497,21 @@ export function Dashboard() {
             setIsConsultationOpen(false);
             setIsGeneratingModalOpen(true);
 
+            // Resgata os dados do veterinário logado
+            let vetName = 'Veterinário não identificado';
+            try {
+              const vetInfo = JSON.parse(localStorage.getItem('veterinario') || '{}');
+              if (vetInfo && vetInfo.nome) {
+                vetName = vetInfo.nome;
+              }
+            } catch (e) {
+              console.error('Erro ao ler dados do veterinário no localStorage', e);
+            }
+
             const formData = new FormData();
             formData.append('audio', audioBlob, `consulta-${Date.now()}.webm`);
             formData.append('tipo', 'Consulta');
+            formData.append('veterinario', vetName);
 
             const response = await api.post(`/pets/${selectedPatient.id}/prontuarios/audio`, formData, {
               headers: { 'Content-Type': 'multipart/form-data' }

@@ -402,13 +402,15 @@ export function PatientDetailModal({ isOpen, onClose, onAddPetForOwner, onDelete
                                 <span className="text-xs font-semibold text-gray-700">
                                   Diagnóstico:
                                 </span>
-                                <p className="text-sm text-gray-900">{currentData.diagnosis}</p>
+                                <p className="text-sm text-gray-900 whitespace-pre-line">
+                                  {currentData.diagnosis}
+                                </p>
                               </div>
                             )}
 
                             <div className="mb-2">
                               <span className="text-xs font-semibold text-gray-700">Resumo:</span>
-                              <p className="text-sm text-gray-700 leading-relaxed">
+                              <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
                                 {currentData.summary}
                               </p>
                             </div>
@@ -418,7 +420,9 @@ export function PatientDetailModal({ isOpen, onClose, onAddPetForOwner, onDelete
                                 <span className="text-xs font-semibold text-gray-700">
                                   Tratamento:
                                 </span>
-                                <p className="text-sm text-gray-700">{currentData.treatment}</p>
+                                <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
+                                  {currentData.treatment}
+                                </p>
                               </div>
                             )}
 

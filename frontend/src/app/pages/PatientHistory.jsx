@@ -253,14 +253,18 @@ export function PatientHistory() {
                               {prontuario.resumo && (
                                 <div className="mb-2">
                                   <p className="text-xs font-semibold text-gray-700">Resumo</p>
-                                  <p className="text-sm text-gray-700 leading-relaxed">{prontuario.resumo}</p>
+                                  <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
+                                    {prontuario.resumo}
+                                  </p>
                                 </div>
                               )}
 
                               {prontuario.tratamento && (
                                 <div>
                                   <p className="text-xs font-semibold text-gray-700">Tratamento</p>
-                                  <p className="text-sm text-gray-700">{prontuario.tratamento}</p>
+                                  <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
+                                    {prontuario.tratamento}
+                                  </p>
                                 </div>
                               )}
                             </div>
